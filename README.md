@@ -14,7 +14,7 @@ The main objective of the wallet is to facilitate user interaction with SphinxCh
 
 ## Building project
 
-Check the project [wiki pages](https://git.spxtek.com/spxdev/spx-wallet/wikis/home) for how to build the project from source.
+Check the project [wiki pages](https://git.spxtek.com/spxdev/spx-wiki/wikis/home) for how to build the project from source.
 
 ## Pre-compiled source
 
