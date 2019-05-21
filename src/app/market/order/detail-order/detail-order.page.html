@@ -1,0 +1,62 @@
+<ion-header>
+
+    <ion-toolbar color="primary">
+  
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref="/market"></ion-back-button>
+      </ion-buttons>
+  
+      <ion-title>Order Details</ion-title>
+  
+    </ion-toolbar>
+        
+  </ion-header>
+      
+  <ion-content>
+
+    <div *ngIf="isLoading" text-center>
+      <ion-spinner color="primary">Loading</ion-spinner>
+    </div>
+
+    <ion-list *ngIf="!isLoading">
+      <ion-list-header color="medium">
+        <ion-grid>
+          <ion-row text-center>
+            <ion-col>Trading</ion-col>
+            <ion-col>For</ion-col>
+            <ion-col>Status</ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-list-header>
+      <ion-item lines="none">
+        <ion-grid>
+          <ion-row text-center>
+            <ion-col>{{ order.origSymbol }}</ion-col>
+            <ion-col>{{ order.destSymbol }}</ion-col>
+            <ion-col>{{ order.orderStatus }}</ion-col>
+          </ion-row>
+          <ion-row text-center>
+            <ion-col>{{ order.origAmount | number: '1.2-8' }}</ion-col>
+            <ion-col>{{ order.destAmount | number: '1.2-8' }}</ion-col>
+            <ion-col></ion-col>
+          </ion-row>
+
+          <ion-row *ngIf="order.origToAddress === asset.publicKey && order.orderStatus <= 12">
+            <ion-col>
+              <ion-button expand="block" color="primary" (click)="placeOffer()">Place Offer</ion-button>
+            </ion-col>
+          </ion-row>
+
+          <ion-row *ngIf="order.spxId === user.spxId && order.orderStatus === 12">
+            <ion-col>
+              <ion-button expand="block" color="danger" >Cancel Order</ion-button>
+            </ion-col>
+          </ion-row>
+
+        </ion-grid>
+      </ion-item>
+    </ion-list>
+  
+  </ion-content>
+  
+    

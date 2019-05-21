@@ -1,0 +1,65 @@
+<ion-header>
+
+  <ion-toolbar color="primary">
+
+    <ion-buttons slot="start" menu="navMain">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+
+    <ion-title>Market</ion-title>
+
+    <ion-buttons slot="primary">
+      <ion-button [routerLink]="['/', 'market', 'create-order']">
+        <ion-icon name="add" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+      
+
+  </ion-toolbar>
+
+</ion-header>
+  
+<ion-content>
+
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+        
+  <div *ngIf="isLoading" text-center>
+    <ion-spinner color="primary">Loading</ion-spinner>
+  </div>
+    
+  <ion-list>
+    <ion-list-header color="medium">
+      <ion-grid>
+        <ion-row text-center>
+          <ion-col>Trading</ion-col>
+          <ion-col></ion-col>
+          <ion-col>For</ion-col>
+          <ion-col></ion-col>
+          <ion-col>Status</ion-col>
+          <ion-col></ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-list-header>
+    <ion-item  *ngFor="let order of orders" [routerLink]="['/', 'market', 'detail-order', order.orderId]" button>
+      <ion-grid>
+        <ion-row text-center>
+          <ion-col>{{ order.origSymbol }}</ion-col>
+          <ion-col>{{ order.origAmount | number: '1.2-8' }}</ion-col>
+          <ion-col>{{ order.destSymbol }}</ion-col>
+          <ion-col>{{ order.destAmount | number: '1.2-8' }}</ion-col>
+          <ion-col>{{ order.orderStatus }}</ion-col>
+          <ion-col>
+            <ion-icon name="shuffle" *ngIf="!order.privateHash"></ion-icon>
+            <ion-icon name="key" *ngIf="order.privateHash"></ion-icon>
+             || 
+            <ion-icon name="create" *ngIf="order.spxId === user.spxId && order.orderStatus <= 12"></ion-icon>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-item>
+  </ion-list>
+    
+    
+</ion-content>

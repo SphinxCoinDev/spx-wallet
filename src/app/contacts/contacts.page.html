@@ -1,0 +1,45 @@
+<ion-header>
+
+  <ion-toolbar color="primary">
+
+    <ion-buttons slot="start" menu="navMain">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    
+    <ion-title>Contacts</ion-title>
+
+  </ion-toolbar>
+
+</ion-header>
+
+<ion-content>
+
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+    
+
+  <ion-grid>
+    <ion-row>
+        <ion-col size="12" size-sm="8" offset-sm="2">
+          <div *ngIf="isLoading" text-center>
+            <ion-spinner color="primary">Loading</ion-spinner>
+          </div>
+        
+          <ion-searchbar type="text" debounce="500" (ionInput)="filterContacts($event)" animated></ion-searchbar>
+
+          <ion-list>
+            <ion-item *ngFor="let contact of contacts" lines="full" (click)="getContact(contact.username)">
+                <ion-icon name="contact" size="large" slot="start"></ion-icon>
+                <ion-label>
+                  {{ contact.username }}
+                </ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-col>
+    </ion-row>
+  </ion-grid>
+
+
+</ion-content>
+    

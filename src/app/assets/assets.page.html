@@ -1,0 +1,53 @@
+<ion-header>
+
+  <ion-toolbar color="primary">
+
+    <ion-buttons slot="start" menu="navMain">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+
+    <ion-title>Assets</ion-title>
+
+    <ion-buttons slot="primary">
+      <ion-button (click)="hideZeroBalance()">
+        <ion-icon name="switch" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
+    <ion-buttons slot="primary">
+      <ion-button (click)="addNewAsset()">
+        <ion-icon name="add" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
+    
+  </ion-toolbar>
+      
+</ion-header>
+  
+<ion-content>
+
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+    
+
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12" size-sm="8" offset-sm="2">
+        <ion-list>
+          <ion-item *ngFor="let asset of filterAssets" [routerLink]="['/', 'assets', 'asset', 'tabs', 'asset-info', asset.symbol]" detail> 
+            <ion-avatar slot="start">
+              <ion-img src="assets/logos/{{ asset.logoUrl }}"></ion-img>
+            </ion-avatar>
+            <ion-label>
+              <h3>{{ asset.name }}</h3>
+              <p>{{ asset.symbol }} ({{ asset.algo }})</p>
+            </ion-label>
+            <ion-badge slot="end">{{ asset.balance | number: '1.2-2' }}</ion-badge>
+          </ion-item>
+        </ion-list>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

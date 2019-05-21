@@ -1,0 +1,69 @@
+<ion-header>
+
+  <ion-toolbar color="primary">
+
+    <ion-buttons slot="start" menu="navMain">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    
+    <ion-title>SPX Wallet</ion-title>
+
+  </ion-toolbar>
+
+</ion-header>
+
+<ion-content>
+  <ion-grid>
+
+    <ion-row>
+      <ion-col size-sm="3" offset-sm="3">
+        <ion-card routerLink="/market" button>
+          <ion-card-header text-center>
+            <ion-icon name="trending-up" size="large"></ion-icon>
+            <ion-card-title>Market</ion-card-title>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+      <ion-col size-sm="3">
+        <ion-card [routerLink]="['/assets']" button>
+          <ion-card-header text-center>
+            <ion-icon name="wallet" size="large"></ion-icon>
+            <ion-card-title>Assets</ion-card-title>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col size-sm="3" offset-sm="3">
+        <ion-card [routerLink]="['/spx']" button>
+          <ion-card-header text-center>
+            <ion-icon name="star" size="large"></ion-icon>
+            <ion-card-title>SPX</ion-card-title>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+      <ion-col size-sm="3">
+        <ion-card [routerLink]="['/contacts']" button>
+          <ion-card-header text-center>
+            <ion-icon name="people" size="large"></ion-icon>
+            <ion-card-title>Contacts</ion-card-title>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+    
+    <ion-row>
+      <ion-col size-sm="3" offset-sm="3">
+        <ion-card [routerLink]="['/profile']" button>
+          <ion-card-header text-center>
+            <ion-icon name="contact" size="large"></ion-icon>
+            <ion-card-title>Profile</ion-card-title>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+        <ion-col size-sm="3"></ion-col>
+      </ion-row>
+      
+  </ion-grid>
+</ion-content>

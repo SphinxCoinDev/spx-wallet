@@ -1,0 +1,8 @@
+{
+  "name": "spx-wallet",
+  "integrations": {
+    "capacitor": {},
+    "cordova": {}
+  },
+  "type": "angular"
+}

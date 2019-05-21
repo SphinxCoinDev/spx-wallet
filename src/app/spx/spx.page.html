@@ -1,0 +1,66 @@
+<ion-header>
+
+  <ion-toolbar color="primary">
+
+    <ion-buttons slot="start" menu="navMain">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+
+    <ion-title>SPX Token</ion-title>
+
+  </ion-toolbar>
+    
+</ion-header>
+  
+<ion-content>
+
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div text-center>
+    <ion-spinner color="primary" *ngIf="isLoading"></ion-spinner>
+  </div>
+      
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12" size-sm="8" offset-sm="2">
+        <ion-card>
+          <ion-card-header text-center>
+            <ion-item lines="none"> 
+              <ion-avatar slot="start">
+                <ion-img src="assets/logos/spx.png"></ion-img>
+              </ion-avatar>
+              <ion-label>
+                <p>Balance</p>
+                <ion-label *ngIf="!isLoading">{{ user.spxBalance | number: '1.8-8' }} SPXT</ion-label>
+              </ion-label>
+            </ion-item>
+          </ion-card-header>
+
+          <ion-card-content>
+
+            
+          </ion-card-content>
+          
+        </ion-card>
+        
+      </ion-col>
+      
+    </ion-row>
+    
+    <ion-row>
+      <ion-col size="12" size-sm="8" offset-sm="2">
+        <ion-item-divider color="light">
+          <ion-label>Private Key</ion-label>
+          <ion-button slot="end" fill="clear" (click)="showKey()">
+            <ion-icon name="eye" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-item-divider>
+
+      </ion-col>
+    </ion-row>
+
+  </ion-grid>
+
+</ion-content>

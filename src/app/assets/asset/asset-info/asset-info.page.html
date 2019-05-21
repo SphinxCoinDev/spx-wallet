@@ -1,0 +1,70 @@
+<ion-header>
+
+  <ion-toolbar color="primary">
+
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/assets"></ion-back-button>
+    </ion-buttons>
+
+    <ion-title>Asset Info</ion-title>
+
+  </ion-toolbar>
+
+</ion-header>
+
+<ion-content>
+
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+  
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12" size-sm="8" offset-sm="2" text-center>
+        <ion-card>
+          <ion-card-header>
+              <ion-item lines="none"> 
+                <ion-avatar slot="start">
+                  <ion-img src="assets/logos/{{ asset.logoUrl }}"></ion-img>
+                </ion-avatar>
+                <ion-label>
+                  <h1>{{ asset.name }}</h1>
+                  <p>{{ asset.symbol }} ({{ asset.algo }})</p>
+                </ion-label>
+              </ion-item>
+          </ion-card-header>
+          <ion-card-content></ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="12" size-sm="8" offset-sm="2" text-center>
+        <ion-item-group>
+          <ion-item-divider color="light">
+            <ion-label>Balance</ion-label>
+            <ion-label slot="end">{{ asset.balance | number: '1.8-8' }} {{ asset.symbol }}</ion-label>
+          </ion-item-divider>
+          <ion-item-divider color="light">
+            <ion-label>Public Key / Address</ion-label>
+            <ion-button slot="end" fill="clear" (click)="copyKey()">
+              <ion-icon name="copy" slot="icon-only"></ion-icon>
+            </ion-button>
+          </ion-item-divider>
+          <ion-item lines="none">
+            <ion-label style="font-size: 80%;">{{ asset.publicKey }}</ion-label>
+          </ion-item>
+          <ion-item-divider color="light">
+            <ion-label>Private Key</ion-label>
+            <ion-button slot="end" fill="clear" (click)="showKey()">
+              <ion-icon name="eye" slot="icon-only"></ion-icon>
+            </ion-button>
+          </ion-item-divider>
+  
+        </ion-item-group>
+
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  
+</ion-content>
+  

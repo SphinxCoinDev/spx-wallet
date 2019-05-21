@@ -1,0 +1,52 @@
+<ion-header>
+
+  <ion-toolbar color="primary">
+
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/assets"></ion-back-button>
+    </ion-buttons>
+
+    <ion-title>Asset Receive</ion-title>
+
+  </ion-toolbar>
+
+</ion-header>
+
+<ion-content padding>
+
+  <ion-grid>
+
+    <ion-row>
+      <ion-col>
+        <ion-list>
+          <ion-item>
+            <ion-label position="floating">Select Asset</ion-label>
+            <ion-select (ionChange)="assetSelected($event)">
+              <ion-select-option *ngFor="let asset of assets" [value]="asset.symbol">{{ asset.name + ' [' + asset.symbol + ']' }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-list>  
+      </ion-col>
+    </ion-row>
+    
+  </ion-grid>
+
+  <ion-grid *ngIf="isLoaded">
+    <ion-row>
+      <ion-col>
+        <ion-item text-center lines="none">
+          <ion-label text-wrap>{{ asset.publicKey }}
+          </ion-label>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-item text-center lines="none">
+          <qrcode [qrdata]="qrCode"></qrcode>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+</ion-content>

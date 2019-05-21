@@ -1,0 +1,226 @@
+<ion-header>
+
+  <ion-toolbar color="primary">
+
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/market"></ion-back-button>
+    </ion-buttons>
+
+    <ion-title>Create New Order</ion-title>
+
+  </ion-toolbar>
+      
+</ion-header>
+    
+<ion-content padding>
+
+  <form [formGroup]="form" *ngIf="!orderCreated">
+
+    <ion-grid>
+
+      <ion-row>
+        <ion-col>
+
+          <ion-list>
+
+            <ion-item-divider color="primary">
+              <ion-label>Origin</ion-label>
+            </ion-item-divider>
+
+            <ion-item>
+              <ion-label position="floating">Asset</ion-label>
+              <ion-select [compareWith]="compareWith" formControlName="origAsset" (ionChange)="assetSelected($event)">
+                <ion-select-option *ngFor="let asset of origAssets" [value]="asset.symbol">{{ asset.name + ' [' + asset.symbol + ']' }}</ion-select-option>
+              </ion-select>
+            </ion-item>
+        
+            <ion-item>
+              <ion-label position="floating">Amount</ion-label>
+              <ion-input type="number" formControlName="origAmount"></ion-input>
+              <ion-button slot="end" fill="clear" (click)="sendAll()">send all</ion-button>
+            </ion-item>
+            
+          </ion-list>  
+          
+        </ion-col>
+      </ion-row>
+      
+      <ion-row>
+        <ion-col>
+          
+          <ion-list>
+
+            <ion-item-divider color="primary">
+              <ion-label>Destination</ion-label>
+            </ion-item-divider>
+            
+            <ion-item>
+              <ion-label position="floating">Asset</ion-label>
+              <ion-select [compareWith]="compareWith" formControlName="destAsset">
+                <ion-select-option *ngFor="let asset of remoteAssets" [value]="asset.symbol">{{ asset.name + ' [' + asset.symbol + ']' }}</ion-select-option>
+              </ion-select>
+            </ion-item>
+    
+            <ion-item>
+              <ion-label position="floating">Amount</ion-label>
+              <ion-input type="number" formControlName="destAmount"></ion-input>
+            </ion-item>
+
+          </ion-list>  
+
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col>
+          <ion-list>
+
+            <ion-item-divider color="primary">
+              <ion-label>Options</ion-label>
+              <ion-buttons slot="end">
+                <ion-button (click)="lookupContact()">
+                  <ion-icon slot="icon-only" name="contacts"></ion-icon>
+                </ion-button>
+                <ion-button (click)="scanQR()">
+                  <ion-icon slot="icon-only" name="qr-scanner"></ion-icon>
+                </ion-button>
+              </ion-buttons>
+            </ion-item-divider>
+            
+            <ion-item>
+              <ion-label position="floating">Set Recipient Address</ion-label>
+              <ion-input formControlName="origTo"></ion-input>
+            </ion-item>
+
+            <!-- <ion-item>
+              <ion-label>Use SPX-ID</ion-label>
+              <ion-checkbox slot="end"></ion-checkbox>
+            </ion-item> -->
+
+          </ion-list>
+        </ion-col>
+      </ion-row>
+      
+      <ion-row>
+        <ion-col>
+          <ion-button type="submit" color="primary" expand="block" (click)="createOrder()" [disabled]="!form.valid">Create Order</ion-button>
+        </ion-col>
+      </ion-row>
+
+    </ion-grid>
+  </form>
+
+  <ion-grid *ngIf="orderCreated">
+    <ion-row>
+      <ion-col size="12" size-sm="8" offset-sm="2">
+        <ion-list>
+
+          <ion-list-header color="success">
+            <ion-label>Order created</ion-label>
+            <ion-icon slot="end" name="checkmark-circle-outline"></ion-icon>
+          </ion-list-header>
+
+          <ion-item>
+            <ion-label position="floating">ID</ion-label>
+            <ion-input value="{{newOrder.orderId}}"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="floating">Order Hash</ion-label>
+            <ion-input value="{{newOrder.orderHash}}"></ion-input>
+          </ion-item>
+
+          <ion-item *ngIf="newOrder.privateHash">
+            <ion-label position="floating">privateHash</ion-label>
+            <ion-input value="{{newOrder.privateHash}}"></ion-input>
+          </ion-item>
+
+          <ion-list-header color="primary">
+            <ion-label>Origin</ion-label>
+          </ion-list-header>
+
+          <ion-item>
+            <ion-label position="floating">Asset</ion-label>
+            <ion-input value="{{newOrder.origSymbol}}"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="floating">From</ion-label>
+            <ion-input value="{{newOrder.origFromAddress}}"></ion-input>
+          </ion-item>
+
+          <ion-item *ngIf="newOrder.privateHash">
+            <ion-label position="floating">To</ion-label>
+            <ion-input value="{{newOrder.origToAddress}}"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="floating">Amount</ion-label>
+            <ion-input value="{{newOrder.origAmount}}"></ion-input>
+          </ion-item>
+
+          <ion-list-header color="primary">
+            <ion-label>Destination</ion-label>
+          </ion-list-header>
+
+          <ion-item>
+            <ion-label position="floating">Asset</ion-label>
+            <ion-input value="{{newOrder.destSymbol}}"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="floating">Key / Address</ion-label>
+            <ion-input value="{{newOrder.destAddress}}"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="floating">Amount</ion-label>
+            <ion-input value="{{newOrder.destAmount}}"></ion-input>
+          </ion-item>
+
+          <ion-list-header color="primary">
+            <ion-label>Fees</ion-label>
+          </ion-list-header>
+
+          <ion-item>
+            <ion-label position="floating">Origin Amount</ion-label>
+            <ion-badge slot="end">{{ newOrder.origAmount | number: '1.8-8' }}</ion-badge>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="floating">Trx Fees</ion-label>
+            <ion-badge slot="end">{{ newOrder.isFees | number: '1.8-8' }}</ion-badge>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="floating">SPX Fees (0.1%)</ion-label>
+            <ion-badge slot="end">{{ newOrder.spxFees | number: '1.8-8' }}</ion-badge>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="floating">Locked Amount</ion-label>
+            <ion-badge slot="end">{{ newOrder.isAmount | number: '1.8-8' }}</ion-badge>
+          </ion-item>
+
+          <ion-list-header color="primary">
+            <ion-label>Lock Transaction</ion-label>
+          </ion-list-header>
+
+          <ion-item>
+            <ion-label position="floating">Key / Address</ion-label>
+            <ion-input value="{{newOrder.isAddress}}"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="floating">Hash</ion-label>
+            <ion-input value="{{trxHash}}"></ion-input>
+          </ion-item>
+              
+        </ion-list>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+</ion-content>
+
+  

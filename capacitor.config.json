@@ -1,0 +1,7 @@
+{
+  "appId": "com.spxtek.wallet",
+  "appName": "SPX Wallet",
+  "bundledWebRuntime": false,
+  "webDir": "www",
+  "linuxAndroidStudioPath": "/storage/Sources/Development/android-studio/bin/studio.sh"
+}
