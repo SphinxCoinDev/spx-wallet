@@ -63,22 +63,18 @@
             <ion-item lines="none" *ngIf="userExists">
               <p class="err">Username exists ... please try another!!!</p>
             </ion-item>
-          </ion-list>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col size-sm="6" offset-sm="3">
-          <ion-list>
+            <ion-item lines="none">
+              <ion-text>
+                <p>
+                  The <b>username</b> is used to act as a handler for your account to enable you to interact with other users, 
+                  so make that it will reflect that :)
+                </p>
+              </ion-text>
+            </ion-item>
             <ion-item>
               <ion-label position="floating">Password</ion-label>
               <ion-input type="password" formControlName="password1" minLenght="6" required placeholder="min. length 6"></ion-input>
             </ion-item>
-          </ion-list>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col size-sm="6" offset-sm="3">
-          <ion-list>
             <ion-item>
               <ion-label position="floating">Confirm Password</ion-label>
               <ion-input type="password" formControlName="password2" minLenght="6" required placeholder="min. length 6"></ion-input>
@@ -87,6 +83,19 @@
             (formRegister.get('password1').value !== formRegister.get('password2').value) && 
             formRegister.get('password2').touched">
               <p class="err">Passwords don't match!!!</p>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-text>
+                <p>
+                  The <b>password</b> is not stored on the server, but is used to encrypt and decrypt your personal wallets, 
+                  so make sure that you don't lose it, or forget it ... you won't be able to recove it!
+                </p>
+                <p>
+                  Please refer the <a href="https://git.spxtek.com/spxdev/spx-wiki/wikis/home" target="_blank">Wiki</a>
+                  to learn more about how everything is setup, and works, 
+                  <b><u>and preferably before you create your account!!</u></b>
+                </p>
+              </ion-text>
             </ion-item>
           </ion-list>
         </ion-col>
@@ -104,30 +113,4 @@
     </ion-grid>
   </form>
   
-  <ion-grid *ngIf="!isLogin">
-    <ion-row>
-      <ion-col size-sm="6" offset-sm="3">
-          <ion-item lines="none">
-            <ion-text>
-              <p>
-                The <b>username</b> is used to act as a handler for your account to enable you to interact with other users, 
-                so make that it will reflect that :)
-              </p>
-              <p>
-                The <b>password</b> is not stored on the server, but is used to encrypt and decrypt your personal wallets, 
-                so make sure that you don't lose it, or forget it ... you won't be able to recove it!
-              </p>
-              <p>
-                Please refer to either the 
-                <a href="https://sphinxcoin.net" target="_blank">Whitepaper</a>, or our 
-                <a href="https://sphinxcoin.net" target="_blank">Website</a> to learn more about how everything is setup, 
-                and works, and preferably before you create your account!!
-              </p>
-            </ion-text>
-          </ion-item>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
-
-
 </ion-content>

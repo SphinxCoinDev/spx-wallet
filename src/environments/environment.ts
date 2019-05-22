@@ -5,8 +5,8 @@
 export const environment = {
   production: false,
   passPhrase: 'everything is relative',
-  apiUrl: 'http://192.168.1.120:3000/api/',
-  // apiUrl: 'https://spxed.sphinxcoin.net/api/api/',
+  // apiUrl: 'http://192.168.1.120:3000/api/',
+  apiUrl: 'https://spxed.sphinxcoin.net/api/api/',
 };
 
 /*
