@@ -28,6 +28,8 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   isLoading = false;
 
+  path = 'spx-wallet';
+
   constructor(
     private authService: AuthService,
     private assetService: AssetsService,
@@ -104,11 +106,7 @@ export class ProfilePage implements OnInit, OnDestroy {
 
         // console.log(JSON.stringify(exportData));
 
-        this.mkdir();
-        // this.fileWrite(JSON.stringify(exportData));
-        this.fileRead();
-        this.readdir();
-        this.getUri();
+        this.fileWrite('export-assets.json', JSON.stringify(exportData));
 
         this.isLoading = false;
       }
@@ -116,37 +114,22 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
 
-  async mkdir() {
-    try {
-      await Filesystem.mkdir({
-        path: 'spx-wallet/secrets',
-        directory: FilesystemDirectory.Documents,
-        createIntermediateDirectories: true             // like mkdir -p
-      })
-      .then((result) => console.log(result))
-      .catch((err) => console.log('mkdir', err));
-    } catch(e) {
-      console.error('Unable to make directory', e);
-    }
+
+
+  async fileWrite(filename: string, data: string) {
+    await this.readdir();
+
+    Filesystem.writeFile({
+      path: this.path + '/' + filename,
+      data: data,
+      directory: FilesystemDirectory.Documents,
+      encoding: FilesystemEncoding.UTF8
+    });
   }
 
-
-  fileWrite(data: string) {
-    try {
-      Filesystem.writeFile({
-        path: 'spx-wallet/secrets/export.json',
-        data: data,
-        directory: FilesystemDirectory.Documents,
-        encoding: FilesystemEncoding.UTF8
-      });
-    } catch(e) {
-      console.error('Unable to write file', e);
-    }
-  }
-
-  async fileRead() {
+  async fileRead(filename: string) {
     const contents = await Filesystem.readFile({
-      path: 'spx-wallet/secrets/export.json',
+      path: this.path + '/' + filename,
       directory: FilesystemDirectory.Documents,
       encoding: FilesystemEncoding.UTF8
     });
@@ -154,21 +137,36 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   async readdir() {
-    try {
-      const ret = await Filesystem.readdir({
-        path: 'spx-wallet/secrets',
-        directory: FilesystemDirectory.Documents
-      });
-      console.log('ret', ret);
-    } catch(e) {
-      console.error('Unable to read dir', e);
-    }
+    await Filesystem.readdir({
+      path: this.path,
+      directory: FilesystemDirectory.Documents
+    }).then((result) => {
+      console.log('readdir ret', result);
+    }).catch(async (err) => {
+      console.log('readdir making dir');
+      await this.mkdir();
+    });
   }
   
-  async getUri() {
+  async mkdir() {
+    await Filesystem.mkdir({
+      path: this.path,
+      directory: FilesystemDirectory.Documents,
+      createIntermediateDirectories: true             // like mkdir -p
+    })
+    .then(
+      (result) => console.log('mkdir', result)
+    )
+    .catch(
+      (err) => console.log('mkdir', err)
+    );
+  }
+
+
+  async getUri(filename: string) {
     Filesystem.getUri({
       directory: FilesystemDirectory.Documents,
-      path: 'spx-wallet/secrets/export.json',
+      path: this.path + '/' + filename,
   }).then((result) => {
       console.log(result);
       let path = result.uri.replace('file://', '_capacitor_');
