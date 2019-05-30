@@ -19,6 +19,10 @@
 
   <ion-searchbar type="text" debounce="500" (ionInput)="filterContacts($event)" animated></ion-searchbar>
 
+  <div *ngIf="isLoading" text-center>
+    <ion-spinner color="primary">Loading</ion-spinner>
+  </div>
+
   <ion-list>
     <ion-item *ngFor="let contact of contacts" lines="full" (click)="getContact(contact.username)">
         <ion-icon name="contact" size="large" slot="start"></ion-icon>

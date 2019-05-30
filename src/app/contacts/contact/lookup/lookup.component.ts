@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { ContactsService } from '../../contacts.service';
@@ -10,7 +10,7 @@ import { Asset } from '../../../assets/asset.model';
   templateUrl: './lookup.component.html',
   styleUrls: ['./lookup.component.scss'],
 })
-export class LookupComponent implements OnInit {
+export class LookupComponent implements OnInit, OnDestroy {
   @Input() selectedAsset: Asset;
 
   contacts: Contact[] = [];
@@ -25,6 +25,10 @@ export class LookupComponent implements OnInit {
 
   ngOnInit() {
     this.getContacts();
+  }
+
+  ngOnDestroy() {
+    this.contactsSub.unsubscribe()
   }
 
   onCancel() {
@@ -55,10 +59,15 @@ export class LookupComponent implements OnInit {
   }
 
   getContact(name: string) {
-    this.contactService.getContactKey(name, this.selectedAsset.symbol).subscribe(
+    this.contactService.getContactKey(name, this.selectedAsset.symbol)
+    .subscribe(
       key => {
         this.contactsSub.unsubscribe();
         this.modalCtrl.dismiss(key, 'confirm', 'lookup-contact');
+      },
+      err => {
+        this.contactsSub.unsubscribe();
+        this.modalCtrl.dismiss('', 'confirm', 'lookup-contact');
       }
     );
   }
