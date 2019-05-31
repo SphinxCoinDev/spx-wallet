@@ -106,7 +106,7 @@ export class ProfilePage implements OnInit, OnDestroy {
 
         // console.log(JSON.stringify(exportData));
 
-        this.fileWrite('export-assets.json', JSON.stringify(exportData));
+        await this.fileWrite('export-assets.json', JSON.stringify(exportData));
 
         this.isLoading = false;
       }
@@ -119,7 +119,7 @@ export class ProfilePage implements OnInit, OnDestroy {
   async fileWrite(filename: string, data: string) {
     await this.readdir();
 
-    Filesystem.writeFile({
+    await Filesystem.writeFile({
       path: this.path + '/' + filename,
       data: data,
       directory: FilesystemDirectory.Documents,
