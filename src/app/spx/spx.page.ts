@@ -4,8 +4,6 @@ import { Subscription } from 'rxjs';
 import { SpxService } from './spx.service';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/user.model';
-import { AlertController } from '@ionic/angular';
-import { EncryptService } from '../encrypt.service';
 
 
 @Component({
@@ -22,8 +20,6 @@ export class SpxPage implements OnInit, OnDestroy {
   constructor(
     private spxService: SpxService,
     private authService: AuthService,
-    private alertCtrl: AlertController,
-    private encService: EncryptService,
   ) { }
 
   ngOnInit() {
@@ -48,14 +44,5 @@ export class SpxPage implements OnInit, OnDestroy {
     event.target.complete();
   }
 
-  async showKey() {
-    const alert = await this.alertCtrl.create({
-      header: 'Private Key',
-      message: this.encService.decrypt(this.user.spxKey, this.authService.userPass),
-      buttons: ['OK']
-    });
-
-    await alert.present();
-  }
 
 }

@@ -1,12 +1,14 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { take, map } from 'rxjs/operators';
 
 import { Plugins, FilesystemDirectory, FilesystemEncoding } from '@capacitor/core';
 const { Filesystem } = Plugins;
 
+import { ToastController, AlertController } from '@ionic/angular';
+
 import { User, SyncAssets, SyncUser } from '../auth/user.model';
 import { AuthService } from '../auth/auth.service';
-import { Asset } from '../assets/asset.model';
 import { AssetsService } from '../assets/assets.service';
 import { EncryptService } from '../encrypt.service';
 
@@ -24,8 +26,6 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   private assetsSub: Subscription;
 
-  private exportSub: Subscription;
-
   isLoading = false;
 
   path = 'spx-wallet';
@@ -34,19 +34,24 @@ export class ProfilePage implements OnInit, OnDestroy {
     private authService: AuthService,
     private assetService: AssetsService,
     private encService: EncryptService,
+    private toastCtrl: ToastController,
+    private alertCtrl: AlertController,
   ) { }
 
   ngOnInit() {
-    this.userSub = this.authService.user.subscribe(user => {
-      this.user = user;
-    });
-
+    this.userSub = this.authService.user
+    .pipe(
+      take(1),
+      map(user => {
+        this.user = user;
+      })
+    )
+    .subscribe();
   }
 
   ngOnDestroy() {
     this.userSub.unsubscribe();
     this.assetsSub.unsubscribe();
-    this.exportSub.unsubscribe();
   }
 
   syncUser() {
@@ -68,10 +73,19 @@ export class ProfilePage implements OnInit, OnDestroy {
         assets: syncAssets
       };
 
-      this.authService.apiSyncUser(syncUser).subscribe(() => {
-        this.isLoading = false;
-      });
-
+      this.authService.apiSyncUser(syncUser)
+      .pipe(
+        take(1),
+        map(async () => {
+          this.isLoading = false;
+          const toast = await this.toastCtrl.create({
+            message: 'Account synced ...',
+            duration: 1000
+          });
+          toast.present();
+        })
+      )
+      .subscribe();
     });
 
   }
@@ -79,52 +93,66 @@ export class ProfilePage implements OnInit, OnDestroy {
   exportAssets() {
     this.isLoading = true;
 
-    this.exportSub = this.assetService.assets
-    .subscribe(async assets => {
+    this.assetService.assets
+    .pipe(
+      take(1),
+      map(assets => {
 
-      if (assets.length > 0) {
-        const exportData = [];
-        // console.log(this.user);
+        if (assets.length > 0) {
+          const exportData = [];
 
-        exportData.push({
-          'name': this.user.username,
-          'symbol': 'SPXT',
-          'password': this.authService.userPass,
-          'publicKey': this.user.spxId,
-          'privateKey': this.encService.decrypt(this.user.spxKey, this.authService.userPass)
-        });
-
-        assets.forEach(asset => {
           exportData.push({
-            'name': asset.name,
-            'symbol': asset.symbol,
-            'algo': asset.algo,
-            'publicKey': asset.publicKey,
-            'privateKey': this.encService.decrypt(asset.privateKey, this.authService.userPass)
+            'name': this.user.username,
+            'symbol': 'SPXT',
+            'password': this.authService.userPass,
+            'publicKey': this.user.spxId,
+            'privateKey': this.encService.decrypt(this.user.spxKey, this.authService.userPass)
           });
-        });
 
-        // console.log(JSON.stringify(exportData));
+          assets.forEach(asset => {
+            exportData.push({
+              'name': asset.name,
+              'symbol': asset.symbol,
+              'algo': asset.algo,
+              'publicKey': asset.publicKey,
+              'privateKey': this.encService.decrypt(asset.privateKey, this.authService.userPass)
+            });
+          });
 
-        await this.fileWrite('export-assets.json', JSON.stringify(exportData));
-
-        this.isLoading = false;
-      }
-    });
+          this.fileWrite('export-assets.json', JSON.stringify(exportData))
+          .then(async result => {
+            this.isLoading = false;
+            const toast = await this.toastCtrl.create({
+              message: 'Assets exported ...',
+              duration: 1000
+            });
+            toast.present();
+          })
+          .catch(async err => {
+            const toast = await this.toastCtrl.create({
+              message: 'Error:' + err.message,
+              color: 'danger',
+              duration: 2000
+            });
+            toast.present();
+          });
+        }
+      })
+      )
+      .subscribe();
   }
-
-
-
 
   async fileWrite(filename: string, data: string) {
     await this.readdir();
 
-    await Filesystem.writeFile({
+    Filesystem.writeFile({
       path: this.path + '/' + filename,
       data: data,
       directory: FilesystemDirectory.Documents,
       encoding: FilesystemEncoding.UTF8
-    });
+    })
+    .then(result => console.log(result))
+    .catch(err => console.log(err));
   }
 
   async fileRead(filename: string) {
@@ -147,12 +175,12 @@ export class ProfilePage implements OnInit, OnDestroy {
       await this.mkdir();
     });
   }
-  
+
   async mkdir() {
     await Filesystem.mkdir({
       path: this.path,
       directory: FilesystemDirectory.Documents,
-      createIntermediateDirectories: true             // like mkdir -p
+      createIntermediateDirectories: false
     })
     .then(
       (result) => console.log('mkdir', result)
@@ -162,19 +190,29 @@ export class ProfilePage implements OnInit, OnDestroy {
     );
   }
 
-
   async getUri(filename: string) {
     Filesystem.getUri({
       directory: FilesystemDirectory.Documents,
       path: this.path + '/' + filename,
   }).then((result) => {
       console.log(result);
-      let path = result.uri.replace('file://', '_capacitor_');
+      const path = result.uri.replace('file://', '_capacitor_');
       console.log(path);
   }, (err) => {
       console.log(err);
   });
   }
-  
+
+
+  async showKey() {
+    const alert = await this.alertCtrl.create({
+      header: 'Private Key',
+      message: this.encService.decrypt(this.user.spxKey, this.authService.userPass),
+      buttons: ['OK']
+    });
+
+    await alert.present();
+  }
+
 
 }
