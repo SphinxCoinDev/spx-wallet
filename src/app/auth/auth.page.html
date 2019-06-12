@@ -90,6 +90,18 @@
                   The <b>password</b> is not stored on the server, but is used to encrypt and decrypt your personal wallets, 
                   so make sure that you don't lose it, or forget it ... you won't be able to recove it!
                 </p>
+              </ion-text>
+            </ion-item>
+            <ion-item>
+              <ion-label position="floating">PGP Secret Phrase</ion-label>
+              <ion-input formControlName="pgpPhrase" minLenght="6" required placeholder="min. length 12"></ion-input>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-text>
+                <p>
+                  The <b>PGP Secret Phrase</b> is used to encrypt and decrypt the exchange 
+                  of private keys between the wallet and server nodes.
+                </p>
                 <p>
                   Please refer the <a href="https://git.spxtek.com/spxdev/spx-wiki/wikis/home" target="_blank">Wiki</a>
                   to learn more about how everything is setup, and works, 

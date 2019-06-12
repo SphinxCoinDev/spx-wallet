@@ -139,7 +139,7 @@ export class AssetSendPage implements OnInit, OnDestroy {
       loadingEl.present();
       this.assetService.createAssetTransaction(
         this.asset.symbol,
-        this.encService.decrypt(this.asset.privateKey, this.authService.userPass),
+        this.encService.decryptCJS(this.asset.privateKey, this.authService.userPass),
         this.form.get('recipientAddress').value,
         this.form.get('recipientAmount').value).subscribe(
           async (data: any) => {

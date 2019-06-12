@@ -115,7 +115,7 @@ export class MarketService {
       'destAmount': destAmount,
       'notes': notes,
       'spxId': this.user.spxId,
-      'spxKey': this.encService.decrypt(this.user.spxKey, this.authService.userPass)
+      'spxKey': this.encService.decryptCJS(this.user.spxKey, this.authService.userPass)
     };
 
     return this.http.post(this.apiURL + 'create/', form, {

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Plugins } from '@capacitor/core';
 import { HttpClient, HttpHeaders, HttpEventType } from '@angular/common/http';
-import { BehaviorSubject, pipe, Observable } from 'rxjs';
-import { take, map, tap, share } from 'rxjs/operators';
+import { BehaviorSubject, pipe, Observable, from, of } from 'rxjs';
+import { take, map, tap, share, switchMap } from 'rxjs/operators';
 import * as moment from 'moment';
 
 import { environment } from '../../environments/environment';
@@ -10,7 +10,6 @@ import { EncryptService } from '../encrypt.service';
 import { AuthService } from '../auth/auth.service';
 import { Asset, RemoteAsset } from './asset.model';
 import { User } from '../auth/user.model';
-
 
 @Injectable({
   providedIn: 'root'
@@ -43,7 +42,8 @@ export class AssetsService {
   private _loadAssetsFromDevice() {
     console.log('service loadAssetsFromDevice');
 
-    Plugins.Storage.get({key: 'assets'}).then(data => {
+    Plugins.Storage.get({ key: 'assets' })
+    .then(data => {
       if (data.value !== null) {
         this._assets.next(JSON.parse(data.value));
       }
@@ -121,36 +121,51 @@ export class AssetsService {
   }
 
   // generate keys for new asset
-  apiGenerateAsset(symbol: string): Observable<Asset> {
+  apiGenerateAsset(symbol: string, spxId: string): Observable<Asset> {
     console.log('service apiGenerateAsset');
-    return this.http.post(this.apiURL + 'generate/' + symbol, null, {
+    let asset: Asset = null;
+
+    return this.http.post(this.apiURL + 'generate/' + spxId + '/' + symbol, null, {
       headers: new HttpHeaders({
         'Content-Type':  'application/json',
       })
     })
     .pipe(
-      map((result: any) => {
+      switchMap((result: any) => {
         if (result.type === 'success') {
-          let selectedAsset: RemoteAsset = null;
-          let asset: Asset = null;
-          selectedAsset = this.remoteAssets.find(a => a.symbol === symbol);
-
-          asset = {
-            symbol,
-            name: selectedAsset.name,
-            algo: selectedAsset.algo,
-            publicKey: result.message.wallet.address,
-            privateKey: this.encService.encrypt(result.message.wallet.privateKey, this.authService.userPass),
-            logoUrl: symbol.toLowerCase() + '.png',
-            balance: 0,
-            lastUpdate: moment().unix()
-          };
-
-          this.addNewAsset(asset).subscribe(() => {});
-
-          console.log('apiGenAsset', asset);
-          return asset;
+          return of(result);
         }
+      }),
+      switchMap((res: any) => {
+        const nodeKey = res.message.nodeKey;
+        const encMsg = res.message.msg;
+
+        return from(this.decryptMsg(nodeKey, encMsg))
+        .pipe(
+          take(1),
+          switchMap((decryptedMsg) => {
+            return of(decryptedMsg);
+          })
+        );
+      }),
+      map((decryptedMsg: any) => {
+        let selectedAsset: RemoteAsset = null;
+        selectedAsset = this.remoteAssets.find(a => a.symbol === symbol);
+
+        asset = {
+          symbol,
+          name: selectedAsset.name,
+          algo: selectedAsset.algo,
+          publicKey: decryptedMsg.address,
+          privateKey: this.encService.encryptCJS(decryptedMsg.privateKey, this.authService.userPass),
+          logoUrl: symbol.toLowerCase() + '.png',
+          balance: 0,
+          lastUpdate: moment().unix()
+        };
+
+        this.addNewAsset(asset).subscribe(() => {});
+        return asset;
+
       })
     );
   }
@@ -220,7 +235,6 @@ export class AssetsService {
     return this.http.get(this.apiURL + 'fees/' + symbol).toPromise();
   }
 
-
   // create new asset transaction
   createAssetTransaction(symbol: string, senderKey: string, recipientKey: string, amount: number) {
     return this._apiCreateAssetTransaction(symbol, senderKey, recipientKey, amount);
@@ -246,5 +260,30 @@ export class AssetsService {
     });
   }
 
+  async decryptMsg(sourceKey: string, encryptedMsg: string) {
+
+    let msg: any = '';
+
+    this.authService.user
+    .pipe(
+      take(1),
+      map(user => {
+        this.user = user;
+      })
+    )
+    .subscribe();
+
+    const pgpPhrase = this.encService.decryptCJS(this.user.pgpPhrase, this.authService.userPass);
+    const pgpPrivKey = this.encService.decryptCJS(this.user.pgpPrivKey, this.authService.userPass);
+
+    await this.encService.decryptPGP(sourceKey, pgpPrivKey, pgpPhrase, encryptedMsg)
+    .then((decMsg: any) => {
+      msg = JSON.parse('[' + decMsg + ']')[0];
+      return msg;
+    });
+
+    return msg;
+
+  }
 
 }

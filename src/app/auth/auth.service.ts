@@ -92,7 +92,7 @@ export class AuthService {
 
     return Plugins.Storage.get({ key: 'user' }).then(data => {
       const storedData = JSON.parse(data.value);
-      const decPhrase = this.encSerivce.decrypt(storedData.secret, password);
+      const decPhrase = this.encSerivce.decryptCJS(storedData.secret, password);
       if (decPhrase === environment.passPhrase) {
         this._userPass = password;
         this._userIsAuthenticated = true;

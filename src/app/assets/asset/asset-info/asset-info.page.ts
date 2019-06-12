@@ -70,7 +70,7 @@ export class AssetInfoPage implements OnInit, OnDestroy {
   async showKey() {
     const alert = await this.alertCtrl.create({
       header: 'Private Key',
-      message: this.encService.decrypt(this.asset.privateKey, this.authService.userPass),
+      message: this.encService.decryptCJS(this.asset.privateKey, this.authService.userPass),
       buttons: ['OK']
     });
 

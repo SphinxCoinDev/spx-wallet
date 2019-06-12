@@ -5,9 +5,12 @@ export class User {
         public spxId: string,
         public spxKey: string,
         public spxBalance: number,
-        public lastUpdate: number,
+        public pgpPhrase: string,
+        public pgpPubKey: string,
+        public pgpPrivKey: string,
         public token: string,
-        public tokenExpirationDate: Date
+        public tokenExpirationDate: Date,
+        public lastUpdate: number
     ) {}
 
     // get token() {
@@ -23,6 +26,7 @@ export class SyncUser {
     constructor (
         public username: string,
         public spxId: string,
+        public pgpKey: string,
         public assets: SyncAssets[]
     ) {}
 }

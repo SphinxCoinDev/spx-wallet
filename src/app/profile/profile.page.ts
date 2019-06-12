@@ -70,6 +70,7 @@ export class ProfilePage implements OnInit, OnDestroy {
       const syncUser: SyncUser = {
         username: this.user.username,
         spxId: this.user.spxId,
+        pgpKey: this.user.pgpPubKey,
         assets: syncAssets
       };
 
@@ -97,17 +98,20 @@ export class ProfilePage implements OnInit, OnDestroy {
     .pipe(
       take(1),
       map(assets => {
+        const exportData = [];
+
+        exportData.push({
+          'name': this.user.username,
+          'symbol': 'SPXT',
+          'password': this.authService.userPass,
+          'publicKey': this.user.spxId,
+          'privateKey': this.encService.decryptCJS(this.user.spxKey, this.authService.userPass),
+          'pgpPhrase': this.encService.decryptCJS(this.user.pgpPhrase, this.authService.userPass),
+          'pgpPubKey': this.user.pgpPubKey,
+          'pgpPrivKey': this.encService.decryptCJS(this.user.pgpPrivKey, this.authService.userPass)
+        });
 
         if (assets.length > 0) {
-          const exportData = [];
-
-          exportData.push({
-            'name': this.user.username,
-            'symbol': 'SPXT',
-            'password': this.authService.userPass,
-            'publicKey': this.user.spxId,
-            'privateKey': this.encService.decrypt(this.user.spxKey, this.authService.userPass)
-          });
 
           assets.forEach(asset => {
             exportData.push({
@@ -115,28 +119,30 @@ export class ProfilePage implements OnInit, OnDestroy {
               'symbol': asset.symbol,
               'algo': asset.algo,
               'publicKey': asset.publicKey,
-              'privateKey': this.encService.decrypt(asset.privateKey, this.authService.userPass)
+              'privateKey': this.encService.decryptCJS(asset.privateKey, this.authService.userPass)
             });
           });
 
-          this.fileWrite('export-assets.json', JSON.stringify(exportData))
-          .then(async result => {
-            this.isLoading = false;
-            const toast = await this.toastCtrl.create({
-              message: 'Assets exported ...',
-              duration: 1000
-            });
-            toast.present();
-          })
-          .catch(async err => {
-            const toast = await this.toastCtrl.create({
-              message: 'Error:' + err.message,
-              color: 'danger',
-              duration: 2000
-            });
-            toast.present();
-          });
         }
+
+        this.fileWrite('export-assets.json', JSON.stringify(exportData))
+        .then(async result => {
+          this.isLoading = false;
+          const toast = await this.toastCtrl.create({
+            message: 'Assets exported ...',
+            duration: 1000
+          });
+          toast.present();
+        })
+        .catch(async err => {
+          const toast = await this.toastCtrl.create({
+            message: 'Error:' + err.message,
+            color: 'danger',
+            duration: 2000
+          });
+          toast.present();
+        });
+
       })
       )
       .subscribe();
@@ -151,7 +157,7 @@ export class ProfilePage implements OnInit, OnDestroy {
       directory: FilesystemDirectory.Documents,
       encoding: FilesystemEncoding.UTF8
     })
-    .then(result => console.log(result))
+    .then(result => {})
     .catch(err => console.log(err));
   }
 
@@ -169,7 +175,6 @@ export class ProfilePage implements OnInit, OnDestroy {
       path: this.path,
       directory: FilesystemDirectory.Documents
     }).then((result) => {
-      console.log('readdir ret', result);
     }).catch(async (err) => {
       console.log('readdir making dir');
       await this.mkdir();
@@ -207,7 +212,7 @@ export class ProfilePage implements OnInit, OnDestroy {
   async showKey() {
     const alert = await this.alertCtrl.create({
       header: 'Private Key',
-      message: this.encService.decrypt(this.user.spxKey, this.authService.userPass),
+      message: this.encService.decryptCJS(this.user.spxKey, this.authService.userPass),
       buttons: ['OK']
     });
 

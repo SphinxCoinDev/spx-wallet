@@ -1,11 +1,14 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController, LoadingController } from '@ionic/angular';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { Asset, RemoteAsset } from '../asset.model';
-import { AssetsService } from '../assets.service';
+import { Subscription } from 'rxjs';
 import { take, map, tap } from 'rxjs/operators';
 import * as moment from 'moment';
-import { Subscription } from 'rxjs';
+
+import { AssetsService } from '../assets.service';
+import { Asset, RemoteAsset } from '../asset.model';
+import { AuthService } from '../../auth/auth.service';
+import { User } from '../../auth/user.model';
 
 @Component({
   selector: 'app-add-asset',
@@ -20,6 +23,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   privateKey: string;
   genSuccess = false;
   asset: Asset = null;
+  user: User = null;
 
   remoteAssets: RemoteAsset[] = [];
   private remoteSub: Subscription;
@@ -27,6 +31,8 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   constructor(
     private modalCtrl: ModalController,
     private assetService: AssetsService,
+    private authService: AuthService,
+    private loadingCtrl: LoadingController,
   ) { }
 
   ngOnInit() {
@@ -57,24 +63,31 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   }
 
   generateAsset() {
-    const symbol = this.form.value.selectedAsset;
+    this.loadingCtrl.create({ message: 'Generating keys ...' }).then(loadingEl => {
+      loadingEl.present();
+      const symbol = this.form.value.selectedAsset;
+      this.authService.user.subscribe(user => this.user = user);
 
-    this.assetService.getAsset(symbol)
-    .pipe(
-      take(1),
-      map(res => {
-        if (res.symbol === undefined) {
-          console.log('no asset');
-          this.assetService.apiGenerateAsset(symbol).subscribe(asset => {
-            this.asset = asset;
-            this.genSuccess = true;
-          });
-        } else {
-          console.log('asset exists!');
-        }
-      })
-    )
-    .subscribe();
+      this.assetService.getAsset(symbol)
+      .pipe(
+        take(1),
+        map(res => {
+          if (res.symbol === undefined) {
+            console.log('no asset');
+            this.assetService.apiGenerateAsset(symbol, this.user.spxId)
+            .subscribe((asset: Asset) => {
+              this.asset = asset;
+              this.genSuccess = true;
+              loadingEl.dismiss();
+            });
+          } else {
+            console.log('asset exists!');
+            loadingEl.dismiss();
+          }
+        })
+      )
+      .subscribe();
+    });
   }
 
 }

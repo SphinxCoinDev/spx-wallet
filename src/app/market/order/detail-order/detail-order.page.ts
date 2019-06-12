@@ -116,7 +116,7 @@ export class DetailOrderPage implements OnInit, OnDestroy {
       const oAsset = this.localAssets.find(asset => asset.symbol === origAsset);
       origAddress = oAsset.publicKey;
       origBalance = oAsset.balance;
-      origKey = this.encService.decrypt(oAsset.privateKey, this.authService.userPass);
+      origKey = this.encService.decryptCJS(oAsset.privateKey, this.authService.userPass);
 
       // checking balance
       loadingEl.message = 'Checking asset balance ...';
