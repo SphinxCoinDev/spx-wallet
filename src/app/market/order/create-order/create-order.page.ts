@@ -11,6 +11,7 @@ import { EncryptService } from '../../../encrypt.service';
 import { MarketService } from '../../market.service';
 import { AuthService } from '../../../auth/auth.service';
 import { LookupComponent } from '../../../contacts/contact/lookup/lookup.component';
+import { User } from '../../../auth/user.model';
 
 @Component({
   selector: 'app-create-order',
@@ -35,6 +36,8 @@ export class CreateOrderPage implements OnInit, OnDestroy {
   orderCreated = false;
   newOrder: Order = null;
   trxHash = '';
+
+  user: User = null;
 
   constructor(
     private assetService: AssetsService,
@@ -172,6 +175,9 @@ export class CreateOrderPage implements OnInit, OnDestroy {
     this.loadingCtrl.create({ message: 'Submitting transaction ...' }).then(loadingEl => {
       loadingEl.present();
 
+      // getting user info
+      this.authService.user.subscribe(user => this.user = user);
+
       // getting origin from public key
       loadingEl.message = 'Checking origin asset ...';
       const oAsset = this.localAssets.find(asset => asset.symbol === origAsset);
@@ -210,7 +216,7 @@ export class CreateOrderPage implements OnInit, OnDestroy {
                 // if not, then create asset
                 if (dAsset === undefined) {
                   loadingEl.message = 'Creating destination asset ...';
-                  this.assetService.apiGenerateAsset(destAsset)
+                  this.assetService.apiGenerateAsset(destAsset, this.user.spxId)
                   .subscribe(
                     newAsset => {
                       destAddress = newAsset.publicKey;

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, from, of } from 'rxjs';
+import { map, take, switchMap } from 'rxjs/operators';
 
 import { environment } from '../../environments/environment';
 
@@ -13,6 +13,7 @@ import { Asset } from '../assets/asset.model';
 
 import { EncryptService } from '../encrypt.service';
 import { Order } from './order/order.model';
+import { stringify } from '@angular/core/src/util';
 
 @Injectable({
   providedIn: 'root'
@@ -81,76 +82,105 @@ export class MarketService {
     return this.http.get(this.apiURL);
   }
 
-
   // create new order
   createOrder(origAsset: string, origFrom: string, origTo: string, origAmount: number,
   destAsset: string, destAddress: string, destAmount: number, notes: string): Observable<Order> {
 
-    console.log ('4', destAddress);
-    return this._apiCreateOrder(origAsset, origFrom, origTo, origAmount,
-    destAsset, destAddress, destAmount, notes)
-    .pipe(
-      map(
-        result => {
-          return result;
-        }
-      )
-    );
-  }
+    console.log('service CreateOrder');
 
-  private _apiCreateOrder(origAsset: string, origFrom: string, origTo: string, origAmount: number,
-    destAsset: string, destAddress: string, destAmount: number, notes: string): Observable<Order> {
-
-    console.log('service _apiCreateOrder');
-
+    // get user details
     this.authService.user.subscribe(user => this.user = user);
 
-    const form = {
-      'origAsset': origAsset,
-      'origFrom': origFrom,
-      'origTo': origTo,
-      'origAmount': origAmount,
-      'destAsset': destAsset,
-      'destAddress': destAddress,
-      'destAmount': destAmount,
-      'notes': notes,
-      'spxId': this.user.spxId,
-      'spxKey': this.encService.decryptCJS(this.user.spxKey, this.authService.userPass)
-    };
+    const msg = this.encService.decryptCJS(this.user.spxKey, this.authService.userPass);
 
-    return this.http.post(this.apiURL + 'create/', form, {
-      headers: new HttpHeaders({
-        'Content-Type':  'application/json',
-      })
-    })
+    return this.http.get(environment.apiUrl + 'getPGPKey')
     .pipe(
-      map((result: any) => {
+      take(1),
+      switchMap((result: any) => {
         if (result.type === 'success') {
-          const newOrder: Order = {
-            orderId: result.message.order.id,
-            orderHash: result.message.order.headerTrx.orderHash,
-            privateHash: result.message.order.headerTrx.privateHash,
-            orderStatus: result.message.order.headerTrx.orderStatus,
-            lastUpdate: result.message.order.headerTrx.laststamp,
-            origSymbol: result.message.order.originTrx.symbol,
-            origFromAddress: result.message.order.originTrx.fromAddress,
-            origToAddress: result.message.order.originTrx.toAddress,
-            origAmount: result.message.order.originTrx.amount,
-            destSymbol: result.message.order.destTrx.symbol,
-            destAddress: result.message.order.destTrx.address,
-            destAmount: result.message.order.destTrx.amount,
-            isAddress: result.message.order.isTrx.address,
-            isAmount: result.message.order.isTrx.amount,
-            isFees: result.message.order.isTrx.fees,
-            spxFees: result.message.order.feeTrx.amount,
-            spxId: result.message.order.spxId
-          };
-          return newOrder;
-        } else {
-          return;
+          return of(result.message.pgpKey);
         }
+      }),
+      take(1),
+      switchMap((destKey: string) => {
+        return from(this.encryptMsg(this.user, destKey, msg))
+        .pipe(
+          take(1),
+          switchMap((encryptedMsg) => {
+            return of(encryptedMsg);
+          })
+        );
+      }),
+      switchMap((encMsg: string) => {
+        const form = {
+          'origAsset': origAsset,
+          'origFrom': origFrom,
+          'origTo': origTo,
+          'origAmount': origAmount,
+          'destAsset': destAsset,
+          'destAddress': destAddress,
+          'destAmount': destAmount,
+          'notes': notes,
+          'spxId': this.user.spxId,
+          'spxKey': encMsg
+        };
+
+        console.log(form);
+
+        return this.http.post(this.apiURL + 'create/', form, {
+          headers: new HttpHeaders({
+            'Content-Type':  'application/json',
+          })
+        })
+        .pipe(
+          map((result: any) => {
+            if (result.type === 'success') {
+              const newOrder: Order = {
+                orderId: result.message.order.id,
+                orderHash: result.message.order.headerTrx.orderHash,
+                privateHash: result.message.order.headerTrx.privateHash,
+                orderStatus: result.message.order.headerTrx.orderStatus,
+                lastUpdate: result.message.order.headerTrx.laststamp,
+                origSymbol: result.message.order.originTrx.symbol,
+                origFromAddress: result.message.order.originTrx.fromAddress,
+                origToAddress: result.message.order.originTrx.toAddress,
+                origAmount: result.message.order.originTrx.amount,
+                destSymbol: result.message.order.destTrx.symbol,
+                destAddress: result.message.order.destTrx.address,
+                destAmount: result.message.order.destTrx.amount,
+                isAddress: result.message.order.isTrx.address,
+                isAmount: result.message.order.isTrx.amount,
+                isFees: result.message.order.isTrx.fees,
+                spxFees: result.message.order.feeTrx.amount,
+                spxId: result.message.order.spxId
+              };
+              return newOrder;
+            } else {
+              return;
+            }
+          })
+        );
       })
     );
+
   }
+
+  async encryptMsg(user: User, destinationKey: string, msg: string) {
+
+    let encryptedMsg: any = '';
+
+    const pgpPhrase = this.encService.decryptCJS(user.pgpPhrase, this.authService.userPass);
+    const pgpPrivKey = this.encService.decryptCJS(user.pgpPrivKey, this.authService.userPass);
+
+    await this.encService.encryptPGP(pgpPrivKey, pgpPhrase, destinationKey, msg)
+    .then((encMsg: any) => {
+      encryptedMsg = JSON.parse('[' + encMsg + ']')[0].msg;
+      return encryptedMsg;
+    });
+
+    return encryptedMsg;
+
+  }
+
 
 }

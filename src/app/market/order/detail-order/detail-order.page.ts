@@ -155,7 +155,7 @@ export class DetailOrderPage implements OnInit, OnDestroy {
                     // if not, then create asset
                     if (dAsset === undefined) {
                       loadingEl.message = 'Creating destination asset ...';
-                      this.assetService.apiGenerateAsset(destAsset)
+                      this.assetService.apiGenerateAsset(destAsset, this.user.spxId)
                       .subscribe(
                         newAsset => {
                           destAddress = newAsset.publicKey;
