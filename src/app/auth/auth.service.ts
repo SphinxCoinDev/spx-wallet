@@ -28,7 +28,7 @@ export class AuthService {
 
   // reads assets from device local storage
   private _loadUserFromDevice() {
-    console.log('service loadUserFromDevice');
+    // console.log('service loadUserFromDevice');
 
     Plugins.Storage.get({key: 'user'}).then(data => {
       if (data.value !== null) {
@@ -39,7 +39,7 @@ export class AuthService {
 
 
   get user() {
-    console.log('service get user');
+    // console.log('service get user');
     if (this._user.value === null) {
       this._loadUserFromDevice();
     }
@@ -67,7 +67,7 @@ export class AuthService {
 
   // write assets to device local storage
   private _storeUserOnDevice(user: User) {
-    console.log('service storeUserOnDevice');
+    // console.log('service storeUserOnDevice');
     Plugins.Storage.set({
       key: 'user',
       value: JSON.stringify(user)
@@ -76,7 +76,7 @@ export class AuthService {
 
   // add new user
   addNewUser(user: User) {
-    console.log('service addNewUser');
+    // console.log('service addNewUser');
     this._user.next(user);
     this._storeUserOnDevice(user);
   }
@@ -88,7 +88,7 @@ export class AuthService {
 
   // login user
   login(password: string) {
-    console.log('service login');
+    // console.log('service login');
 
     return Plugins.Storage.get({ key: 'user' }).then(data => {
       const storedData = JSON.parse(data.value);
@@ -114,7 +114,7 @@ export class AuthService {
 
   // get user info
   apiGetUserInfo(username: string) {
-    console.log('service apiGetUserInfo');
+    // console.log('service apiGetUserInfo');
     return this.http
       .get(this.apiURL + username)
       .pipe(map(resData => {
@@ -125,12 +125,12 @@ export class AuthService {
 
   // api create new user
   apiCreateUser(username: string) {
-    console.log('service apiCreateUser');
+    // console.log('service apiCreateUser');
     return this.http.get(this.apiURL + 'create/' + username);
   }
 
   apiSyncUser(syncUser: SyncUser) {
-    console.log('service apiSyncUser');
+    // console.log('service apiSyncUser');
     return this.http.post(this.apiURL + 'sync/', syncUser, {
       headers: new HttpHeaders({
         'Content-Type':  'application/json',

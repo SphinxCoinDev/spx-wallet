@@ -24,6 +24,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   genSuccess = false;
   asset: Asset = null;
   user: User = null;
+  private userSub: Subscription;
 
   remoteAssets: RemoteAsset[] = [];
   private remoteSub: Subscription;
@@ -43,6 +44,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       })
     });
 
+    this.getUserInfo();
     this.getRemoteAssetsList();
   }
 
@@ -62,11 +64,16 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     );
   }
 
+  getUserInfo() {
+    this.userSub = this.authService.user.subscribe(
+      user => this.user = user
+      );
+  }
+
   generateAsset() {
     this.loadingCtrl.create({ message: 'Generating keys ...' }).then(loadingEl => {
       loadingEl.present();
       const symbol = this.form.value.selectedAsset;
-      this.authService.user.subscribe(user => this.user = user);
 
       this.assetService.getAsset(symbol)
       .pipe(

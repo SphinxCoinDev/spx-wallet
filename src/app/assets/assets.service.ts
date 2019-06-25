@@ -236,28 +236,39 @@ export class AssetsService {
   }
 
   // create new asset transaction
-  createAssetTransaction(symbol: string, senderKey: string, recipientKey: string, amount: number) {
-    return this._apiCreateAssetTransaction(symbol, senderKey, recipientKey, amount);
-  }
+  createAssetTransaction(symbol: string, senderKey: string, recipientKey: string, amount: number, type: string) {
 
-  private _apiCreateAssetTransaction(symbol: string, senderKey: string, recipientKey: string, amount: number) {
-    console.log('service apiCreateAssetTransaction');
-
-    this.authService.user.subscribe(user => this.user = user);
-
-    const form = {
-      'symbol': symbol,
-      'spxKey': this.user.spxId,
-      'senderKey': senderKey,
-      'recipientKey': recipientKey,
-      'amount': amount
-    };
-
-    return this.http.post(this.apiURL + 'transact/', form, {
-      headers: new HttpHeaders({
-        'Content-Type':  'application/json',
+    // get user details
+    this.authService.user
+    .pipe(
+      take(1),
+      map(user => {
+        this.user = user;
       })
-    });
+    )
+    .subscribe();
+
+    return this.encryptMsg(senderKey)
+    .pipe(
+      take(1),
+      switchMap((result: any) => {
+        const form = {
+          'symbol': symbol,
+          'spxKey': this.user.spxId,
+          'senderKey': result.msg,
+          'recipientKey': recipientKey,
+          'amount': amount,
+          'type': type
+        };
+
+        return this.http.post(this.apiURL + 'transact/', form, {
+          headers: new HttpHeaders({
+            'Content-Type':  'application/json',
+          })
+        });
+      })
+    );
+
   }
 
   async decryptMsg(sourceKey: string, encryptedMsg: string) {
@@ -284,6 +295,31 @@ export class AssetsService {
 
     return msg;
 
+  }
+
+  encryptMsg(encryptedMsg: string): Observable<string> {
+
+    const pgpPhrase = this.encService.decryptCJS(this.user.pgpPhrase, this.authService.userPass);
+    const pgpPrivKey = this.encService.decryptCJS(this.user.pgpPrivKey, this.authService.userPass);
+
+    return this.http.get(environment.apiUrl + 'getPGPKey')
+    .pipe(
+      take(1),
+      switchMap((result: any) => {
+        if (result.type === 'success') {
+          return of(result.message.pgpKey);
+        }
+      }),
+      switchMap((recipientKey: string) => {
+        return from(this.encService.encryptPGP(pgpPrivKey, pgpPhrase, recipientKey, encryptedMsg))
+        .pipe(
+          take(1),
+          map((encMsg: any) => {
+            return JSON.parse('[' + encMsg + ']')[0];
+          })
+        );
+      })
+    );
   }
 
 }

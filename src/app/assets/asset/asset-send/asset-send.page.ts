@@ -62,7 +62,8 @@ export class AssetSendPage implements OnInit, OnDestroy {
       })
     });
 
-    this.assetSub = this.assetService.assets.subscribe((assets: Asset[]) => {
+    this.assetSub = this.assetService.assets
+    .subscribe((assets: Asset[]) => {
       const result = assets.filter(asset => asset.balance > 0);
       this.assets = result;
     });
@@ -141,28 +142,31 @@ export class AssetSendPage implements OnInit, OnDestroy {
         this.asset.symbol,
         this.encService.decryptCJS(this.asset.privateKey, this.authService.userPass),
         this.form.get('recipientAddress').value,
-        this.form.get('recipientAmount').value).subscribe(
-          async (data: any) => {
-            if (data.type === 'success') {
-              this.assetService.getAssetBalance(this.asset.symbol, this.asset.publicKey, this.asset.balance);
-              this.trxHash = data.message.trxHash;
-              this.submitted = true;
-              loadingEl.dismiss();
-            }
-          },
-          async (error: any) => {
-            this.submitted = false;
+        this.form.get('recipientAmount').value,
+        'asset'
+      )
+      .subscribe(
+        async (data: any) => {
+          if (data.type === 'success') {
+            this.assetService.getAssetBalance(this.asset.symbol, this.asset.publicKey, this.asset.balance);
+            this.trxHash = data.message.trxHash;
+            this.submitted = true;
             loadingEl.dismiss();
-            const toast = await this.toastCtrl.create({
-              message: error.error.message,
-              position: 'bottom',
-              showCloseButton: true,
-              closeButtonText: 'Ok',
-              color: 'danger'
-            });
-            toast.present();
           }
-        );
+        },
+        async (error: any) => {
+          this.submitted = false;
+          loadingEl.dismiss();
+          const toast = await this.toastCtrl.create({
+            message: error.error.message,
+            position: 'bottom',
+            showCloseButton: true,
+            closeButtonText: 'Ok',
+            color: 'danger'
+          });
+          toast.present();
+        }
+      );
     });
   }
 

@@ -97,6 +97,7 @@ export class AuthPage implements OnInit {
     const password: string = this.formRegister.get('password1').value;
     const pPhrase: string = this.formRegister.get('pgpPhrase').value;
     this.userExists = false;
+
     this.loadingCtrl.create({ message: 'Submitting data ...' }).then(async loadingEl => {
       loadingEl.present();
       this.authService.apiCreateUser(username).subscribe(

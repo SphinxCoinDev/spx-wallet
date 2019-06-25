@@ -171,7 +171,7 @@ export class DetailOrderPage implements OnInit, OnDestroy {
                               // lock funds
                               loadingEl.message = 'Locking funds ...';
                               this.assetService.createAssetTransaction(
-                                origAsset, origKey, order.isAddress, order.isAmount
+                                origAsset, origKey, order.isAddress, order.isAmount, 'market'
                               ).subscribe(
                                 () => {
                                   loadingEl.dismiss();
@@ -200,7 +200,7 @@ export class DetailOrderPage implements OnInit, OnDestroy {
                           // lock funds
                           loadingEl.message = 'Locking funds ...';
                           this.assetService.createAssetTransaction(
-                            origAsset, origKey, order.isAddress, order.isAmount
+                            origAsset, origKey, order.isAddress, order.isAmount, 'market'
                           ).subscribe(
                             (trx: any) => {
                               console.log('trx', trx);

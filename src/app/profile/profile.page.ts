@@ -24,8 +24,6 @@ export class ProfilePage implements OnInit, OnDestroy {
   user: User = null;
   private userSub: Subscription;
 
-  private assetsSub: Subscription;
-
   isLoading = false;
 
   path = 'spx-wallet';
@@ -50,8 +48,7 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.userSub.unsubscribe();
-    this.assetsSub.unsubscribe();
+      this.userSub.unsubscribe();
   }
 
   syncUser() {
@@ -59,35 +56,39 @@ export class ProfilePage implements OnInit, OnDestroy {
     const syncAssets: SyncAssets[] = [];
     this.isLoading = true;
 
-    this.assetsSub = this.assetService.assets.subscribe(assets => {
-      assets.forEach(asset => {
-        syncAssets.push({
-          'asset': asset.symbol,
-          'key': asset.publicKey
-        });
-      });
-
-      const syncUser: SyncUser = {
-        username: this.user.username,
-        spxId: this.user.spxId,
-        pgpKey: this.user.pgpPubKey,
-        assets: syncAssets
-      };
-
-      this.authService.apiSyncUser(syncUser)
-      .pipe(
-        take(1),
-        map(async () => {
-          this.isLoading = false;
-          const toast = await this.toastCtrl.create({
-            message: 'Account synced ...',
-            duration: 1000
+    this.assetService.assets.pipe(
+      take(1),
+      map(assets => {
+        assets.forEach(asset => {
+          syncAssets.push({
+            'asset': asset.symbol,
+            'key': asset.publicKey
           });
-          toast.present();
-        })
-      )
-      .subscribe();
-    });
+        });
+  
+        const syncUser: SyncUser = {
+          username: this.user.username,
+          spxId: this.user.spxId,
+          pgpKey: this.user.pgpPubKey,
+          assets: syncAssets
+        };
+  
+        this.authService.apiSyncUser(syncUser)
+        .pipe(
+          take(1),
+          map(async () => {
+            this.isLoading = false;
+            const toast = await this.toastCtrl.create({
+              message: 'Account synced ...',
+              duration: 1000
+            });
+            toast.present();
+          })
+        )
+        .subscribe();
+      })
+    )
+    .subscribe();
 
   }
 

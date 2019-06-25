@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { BarcodeScannerOptions, BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { LoadingController, ModalController } from '@ionic/angular';
+import { LoadingController, ModalController, ToastController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
+import { take, map } from 'rxjs/operators';
 
 import { Asset, RemoteAsset } from '../../../assets/asset.model';
 import { Order } from '../order.model';
@@ -47,6 +48,7 @@ export class CreateOrderPage implements OnInit, OnDestroy {
     private marketService: MarketService,
     private authService: AuthService,
     private modalCtrl: ModalController,
+    private toastCtrl: ToastController
 
   ) {
     // Options
@@ -107,10 +109,15 @@ export class CreateOrderPage implements OnInit, OnDestroy {
 
   sendAll() {
     const symbol = this.form.get('origAsset').value;
-    this.assetService.getAsset(symbol).subscribe(a => {
-      this.asset = a;
-      this.form.get('origAmount').setValue(this.asset.balance);
-    });
+    this.assetService.getAsset(symbol)
+    .pipe(
+      take(1),
+      map(a => {
+        this.asset = a;
+        this.form.get('origAmount').setValue(this.asset.balance);
+      })
+    )
+    .subscribe();
   }
 
   scanQR() {
@@ -151,9 +158,9 @@ export class CreateOrderPage implements OnInit, OnDestroy {
 
 
   createOrder() {
-    const origAsset = <string>this.form.get('origAsset').value;
-    const destAsset = <string>this.form.get('destAsset').value;
-    let   origTo = <string>this.form.get('origTo').value || '';
+    const origAsset  = <string>this.form.get('origAsset').value;
+    const destAsset  = <string>this.form.get('destAsset').value;
+    let   origTo     = <string>this.form.get('origTo').value || '';
     const origAmount = <number>this.form.get('origAmount').value;
     const destAmount = <number>this.form.get('destAmount').value;
     const notes = '';
@@ -196,17 +203,26 @@ export class CreateOrderPage implements OnInit, OnDestroy {
           // checking fees
           loadingEl.message = 'Checking fees ...';
           this.assetService.getAssetFees(origAsset).then(
-            (result: any) => {
+            async (result: any) => {
               assetFees = Number(result.message.fees);
               trxFees = assetFees * feeMultiplier;
               spxFees = origAmount * dexFee;
               trxAmount = origAmount + trxFees + spxFees;
-              console.log(trxAmount);
+              // console.log(trxAmount);
 
               // check if balance is enough
               if (trxAmount > origBalance) {
-                console.log ('Not enough funds!!');
+                // console.log ('Not enough funds!!');
                 loadingEl.dismiss();
+                const toast = await this.toastCtrl.create({
+                  message: 'Not enough funds!!!',
+                  position: 'bottom',
+                  showCloseButton: true,
+                  closeButtonText: 'Ok',
+                  color: 'danger'
+                });
+                toast.present();
+    
                 return;
               } else {
                 // check if destination asset exists
@@ -232,7 +248,7 @@ export class CreateOrderPage implements OnInit, OnDestroy {
                           // lock funds
                           loadingEl.message = 'Locking funds ...';
                           this.assetService.createAssetTransaction(
-                            origAsset, origKey, order.isAddress, order.isAmount
+                            origAsset, origKey, order.isAddress, order.isAmount, 'market'
                           ).subscribe(
                             () => {
                               this.form.reset();
@@ -262,9 +278,8 @@ export class CreateOrderPage implements OnInit, OnDestroy {
                       // lock funds
                       loadingEl.message = 'Locking funds ...';
                       this.assetService.createAssetTransaction(
-                        origAsset, origKey, order.isAddress, order.isAmount
-                      ).subscribe(
-                        (trx: any) => {
+                        origAsset, origKey, order.isAddress, order.isAmount, 'market')
+                        .subscribe((trx: any) => {
                           console.log('trx', trx);
                           this.trxHash = trx.message.trxHash;
                           this.orderCreated = true;
