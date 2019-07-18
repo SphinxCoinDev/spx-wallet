@@ -8,6 +8,7 @@ import * as moment from 'moment';
 import { AssetsService } from '../assets.service';
 import { Asset, RemoteAsset } from '../asset.model';
 import { AuthService } from '../../auth/auth.service';
+import { EncryptService } from '../../encrypt.service';
 import { User } from '../../auth/user.model';
 
 @Component({
@@ -34,6 +35,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     private assetService: AssetsService,
     private authService: AuthService,
     private loadingCtrl: LoadingController,
+    private encService: EncryptService,
   ) { }
 
   ngOnInit() {
@@ -84,6 +86,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
             this.assetService.apiGenerateAsset(symbol, this.user.spxId)
             .subscribe((asset: Asset) => {
               this.asset = asset;
+              this.asset.privateKey = this.encService.decryptCJS(asset.privateKey, this.authService.userPass);
               this.genSuccess = true;
               loadingEl.dismiss();
             });
