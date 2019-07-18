@@ -226,13 +226,9 @@ export class AssetsService {
   }
 
   // get asset fees
-  getAssetFees(symbol: string) {
-    return this._apiGetAssetFees(symbol);
-  }
-
-  private _apiGetAssetFees(symbol: string) {
+  getAssetFees(symbol: string, publicKey: string) {
     console.log('service apiGetAssetFees');
-    return this.http.get(this.apiURL + 'fees/' + symbol).toPromise();
+    return this.http.get(this.apiURL + 'fees/' + symbol + '/' + publicKey).toPromise();
   }
 
   // create new asset transaction

@@ -202,7 +202,7 @@ export class CreateOrderPage implements OnInit, OnDestroy {
 
           // checking fees
           loadingEl.message = 'Checking fees ...';
-          this.assetService.getAssetFees(origAsset).then(
+          this.assetService.getAssetFees(origAsset, this.asset.publicKey).then(
             async (result: any) => {
               assetFees = Number(result.message.fees);
               trxFees = assetFees * feeMultiplier;

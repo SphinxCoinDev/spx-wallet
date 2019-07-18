@@ -87,7 +87,7 @@ export class AssetSendPage implements OnInit, OnDestroy {
       this.assetSub = this.assetService.assets.subscribe((assets: Asset[]) => {
         this.asset = assets.find(asset => asset.symbol === this.symbol);
         this.assetService.getAssetBalance(this.asset.symbol, this.asset.publicKey, this.asset.balance);
-        this.assetService.getAssetFees(this.asset.symbol).then((result: any) => {
+        this.assetService.getAssetFees(this.asset.symbol, this.asset.publicKey).then((result: any) => {
           this.fees = Number(result.message.fees);
           loadingEl.dismiss();
         });
@@ -111,7 +111,7 @@ export class AssetSendPage implements OnInit, OnDestroy {
 
   sendAll() {
     const amount = this.asset.balance - this.fees;
-    this.form.get('recipientAmount').setValue(amount);
+    this.form.get('recipientAmount').setValue(amount.toFixed(8));
   }
 
   lookupContact() {

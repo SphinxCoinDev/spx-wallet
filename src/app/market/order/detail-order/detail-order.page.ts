@@ -128,7 +128,7 @@ export class DetailOrderPage implements OnInit, OnDestroy {
 
           // checking fees
           loadingEl.message = 'Checking fees ...';
-          this.assetService.getAssetFees(origAsset).then(
+          this.assetService.getAssetFees(origAsset, this.asset.publicKey).then(
             (result: any) => {
               assetFees = Number(result.message.fees);
               trxFees = assetFees * feeMultiplier;
