@@ -138,7 +138,6 @@ export class AuthService {
     })
     .pipe(
       map(resData => {
-        console.log(resData);
         return resData;
       })
     );

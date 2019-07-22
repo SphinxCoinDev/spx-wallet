@@ -7,8 +7,6 @@
 *.tmp
 *.tmp.*
 log.txt
-notes.txt
-ToDo.md
 environmenet.ts
 *.sublime-project
 *.sublime-workspace
@@ -36,6 +34,7 @@ plugins/
 plugins/android.json
 plugins/ios.json
 $RECYCLE.BIN/
+ignore/
 
 .DS_Store
 Thumbs.db

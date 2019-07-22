@@ -40,7 +40,6 @@ export class AssetInfoPage implements OnInit, OnDestroy {
         this.asset = assets.find(asset => asset.symbol === paramMap.get('symbol'));
         this.getBalance();
       });
-
     });
   }
 

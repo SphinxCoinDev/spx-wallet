@@ -73,7 +73,8 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   }
 
   generateAsset() {
-    this.loadingCtrl.create({ message: 'Generating keys ...' }).then(loadingEl => {
+    this.loadingCtrl.create({ message: 'Generating keys ...' })
+    .then(loadingEl => {
       loadingEl.present();
       const symbol = this.form.value.selectedAsset;
 
@@ -82,11 +83,10 @@ export class AddAssetComponent implements OnInit, OnDestroy {
         take(1),
         map(res => {
           if (res.symbol === undefined) {
-            console.log('no asset');
             this.assetService.apiGenerateAsset(symbol, this.user.spxId)
-            .subscribe((asset: Asset) => {
+            .subscribe(async (asset: Asset) => {
               this.asset = asset;
-              this.asset.privateKey = this.encService.decryptCJS(asset.privateKey, this.authService.userPass);
+              this.asset.privateKey = await this.encService.decryptCJS(asset.privateKey, this.authService.userPass);
               this.genSuccess = true;
               loadingEl.dismiss();
             });

@@ -25,11 +25,11 @@
           <ion-card-header>
               <ion-item lines="none"> 
                 <ion-avatar slot="start">
-                  <ion-img src="assets/logos/{{ asset.logoUrl }}"></ion-img>
+                  <ion-img src="assets/logos/{{ asset?.logoUrl }}"></ion-img>
                 </ion-avatar>
                 <ion-label>
-                  <h1>{{ asset.name }}</h1>
-                  <p>{{ asset.symbol }} ({{ asset.algo }})</p>
+                  <h1>{{ asset?.name }}</h1>
+                  <p>{{ asset?.symbol }} ({{ asset?.algo }})</p>
                 </ion-label>
               </ion-item>
           </ion-card-header>
@@ -42,7 +42,7 @@
         <ion-item-group>
           <ion-item-divider color="light">
             <ion-label>Balance</ion-label>
-            <ion-label slot="end">{{ asset.balance | number: '1.8-8' }} {{ asset.symbol }}</ion-label>
+            <ion-label slot="end">{{ asset?.balance | number: '1.8-8' }} {{ asset?.symbol }}</ion-label>
           </ion-item-divider>
           <ion-item-divider color="light">
             <ion-label>Public Key / Address</ion-label>
@@ -51,7 +51,7 @@
             </ion-button>
           </ion-item-divider>
           <ion-item lines="none">
-            <ion-label style="font-size: 80%;">{{ asset.publicKey }}</ion-label>
+            <ion-label style="font-size: 80%;">{{ asset?.publicKey }}</ion-label>
           </ion-item>
           <ion-item-divider color="light">
             <ion-label>Private Key</ion-label>

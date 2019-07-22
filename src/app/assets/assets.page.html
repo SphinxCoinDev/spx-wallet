@@ -73,7 +73,7 @@
         <ion-list>
           <ion-item *ngFor="let asset of filterAssets" [routerLink]="['/', 'assets', 'asset', 'tabs', 'asset-info', asset.symbol]" detail> 
             <ion-avatar slot="start">
-              <ion-img src="assets/logos/{{ asset.logoUrl }}"></ion-img>
+              <ion-img src="assets/logos/{{ asset?.logoUrl }}"></ion-img>
             </ion-avatar>
             <ion-label>
               <h3>{{ asset.name }}</h3>

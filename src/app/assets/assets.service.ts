@@ -58,6 +58,7 @@ export class AssetsService {
       tap(assets => {
         this._assets.next(assets.concat(asset));
         this._storeAssetsOnDevice();
+        this._loadAssetsFromDevice();
       })
     );
   }
