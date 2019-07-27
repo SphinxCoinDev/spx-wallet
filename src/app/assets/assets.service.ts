@@ -161,6 +161,8 @@ export class AssetsService {
           privateKey: this.encService.encryptCJS(decryptedMsg.privateKey, this.authService.userPass),
           logoUrl: symbol.toLowerCase() + '.png',
           balance: 0,
+          balanceUSD: 0,
+          balanceBTC: 0,
           lastUpdate: moment().unix()
         };
 
@@ -175,19 +177,50 @@ export class AssetsService {
   // get asset balance
   getAssetBalance(symbol: string, publicKey: string, balance: number) {
     console.log('service getAssetBalance');
-    return this._apiGetAssetBalance(symbol, publicKey).then((data: any) => {
-      if (Number(data.message.balance) !== Number(balance)) {
-        this.updateAssetBalance(symbol, Number(data.message.balance)).subscribe();
-      }
-    });
+    return this.http.get(this.apiURL + 'balance?symbol=' + symbol + '&publicKey=' + publicKey)
+    .pipe(
+      take(1),
+      switchMap((result: any) => {
+        return of(result.message);
+      }),
+      take(1),
+      switchMap((result: any) => {
+        return this.assets.pipe(
+          take(1),
+          map((assets) => {
+            const updatedAssetIndex = assets.findIndex(asset => asset.symbol === symbol);
+            const updatedAsset = [...assets];
+            const oldAsset = updatedAsset[updatedAssetIndex];
+            updatedAsset[updatedAssetIndex] = new Asset(
+              oldAsset.symbol,
+              oldAsset.name,
+              oldAsset.algo,
+              oldAsset.logoUrl,
+              oldAsset.publicKey,
+              oldAsset.privateKey,
+              result.balance,
+              result.balanceUSD,
+              result.balanceBTC,
+              moment().unix()
+            );
+
+            this._assets.next(updatedAsset);
+            this._storeAssetsOnDevice();
+            return result;
+          })
+        );
+      })
+    );
   }
 
   // update asset balance
-  updateAssetBalance(symbol: string, balance: number) {
+  updateAssetBalance(symbol: string, balances: any) {
     console.log('service updateAssetBalance');
-    return this.assets.pipe(
-      take(1),
-      map(assets => {
+    console.log('1', balances.balance);
+    return this.assets
+    .pipe(
+      map((assets) => {
+
         const updatedAssetIndex = assets.findIndex(asset => asset.symbol === symbol);
         const updatedAsset = [...assets];
         const oldAsset = updatedAsset[updatedAssetIndex];
@@ -198,19 +231,18 @@ export class AssetsService {
           oldAsset.logoUrl,
           oldAsset.publicKey,
           oldAsset.privateKey,
-          balance,
+          balances.balance,
+          balances.balanceUSD,
+          balances.balanceBTC,
           moment().unix()
         );
 
         this._assets.next(updatedAsset);
         this._storeAssetsOnDevice();
+        return;
       })
-    );
-  }
-
-  private _apiGetAssetBalance(symbol: string, publicKey: string) {
-    console.log('service apiGetAssetBalance');
-    return this.http.get(this.apiURL + 'balance?symbol=' + symbol + '&publicKey=' + publicKey).toPromise();
+    )
+    .subscribe;
   }
 
   apiGetAssetBalance(symbol: string, publicKey: string, balance: number): Observable<number> {
@@ -219,7 +251,7 @@ export class AssetsService {
     .pipe(
       map((result: any) => {
         if (Number(result.message.balance) !== Number(balance)) {
-          this.updateAssetBalance(symbol, Number(result.message.balance)).subscribe();
+          this.updateAssetBalance(symbol, Number(result.message.balance));
         }
         return Number(result.message.balance);
       })

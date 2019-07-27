@@ -1,12 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { NavController, AlertController, ToastController } from '@ionic/angular';
+import { NavController, AlertController, ToastController, LoadingController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { Clipboard } from '@ionic-native/clipboard/ngx';
 import { AssetsService } from '../../assets.service';
 import { Asset } from '../../asset.model';
 import { EncryptService } from '../../../encrypt.service';
 import { AuthService } from '../../../auth/auth.service';
+import { take, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-asset-info',
@@ -26,7 +27,8 @@ export class AssetInfoPage implements OnInit, OnDestroy {
     private clipboard: Clipboard,
     private toastCtrl: ToastController,
     private encService: EncryptService,
-    private authService: AuthService
+    private authService: AuthService,
+    private loadingCtrl: LoadingController,
   ) { }
 
   ngOnInit() {
@@ -36,10 +38,14 @@ export class AssetInfoPage implements OnInit, OnDestroy {
         return;
       }
 
-      this.assetSub = this.assetService.assets.subscribe((assets: Asset[]) => {
-        this.asset = assets.find(asset => asset.symbol === paramMap.get('symbol'));
-        this.getBalance();
-      });
+      this.assetSub = this.assetService.assets
+      .subscribe(
+        (assets: Asset[]) => {
+          this.asset = assets.find(asset => asset.symbol === paramMap.get('symbol'));
+        }
+      );
+
+      this.getBalance();
     });
   }
 
@@ -47,12 +53,23 @@ export class AssetInfoPage implements OnInit, OnDestroy {
     this.assetSub.unsubscribe();
   }
 
-  async getBalance() {
-    this.assetService.getAssetBalance(this.asset.symbol, this.asset.publicKey, this.asset.balance);
+  getBalance() {
+    this.loadingCtrl.create({ message: 'Checking '  + this.asset.symbol + ' balance ... ' })
+    .then(loadingEl => {
+      loadingEl.present();
+      this.assetService.getAssetBalance(this.asset.symbol, this.asset.publicKey, this.asset.balance)
+      .pipe(
+        take(1),
+        map(() => {
+          loadingEl.dismiss();
+        })
+      )
+      .subscribe();
+    });
   }
 
-  async doRefresh(event) {
-    await this.getBalance();
+  doRefresh(event) {
+    this.getBalance();
     event.target.complete();
   }
 
@@ -68,9 +85,11 @@ export class AssetInfoPage implements OnInit, OnDestroy {
 
   async showKey() {
     const alert = await this.alertCtrl.create({
-      header: 'Private Key',
-      message: this.encService.decryptCJS(this.asset.privateKey, this.authService.userPass),
-      buttons: ['OK']
+      header: 'Keys',
+      message:
+      '<b>Address / Public Key:</b><br><br>' + this.asset.publicKey + '<br><br>' +
+      '<b>Private Key:</b><br><br>' + this.encService.decryptCJS(this.asset.privateKey, this.authService.userPass),
+      buttons: [ 'ok' ]
     });
 
     await alert.present();

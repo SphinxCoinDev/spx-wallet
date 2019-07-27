@@ -7,6 +7,8 @@ export class Asset {
         public publicKey: string,
         public privateKey: string,
         public balance: number,
+        public balanceUSD: number,
+        public balanceBTC: number,
         public lastUpdate: number
     ) {}
 }

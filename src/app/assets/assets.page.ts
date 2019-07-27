@@ -1,9 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController, LoadingController } from '@ionic/angular';
 import { AddAssetComponent } from './add-asset/add-asset.component';
 import { Asset } from './asset.model';
 import { AssetsService } from './assets.service';
 import { Subscription } from 'rxjs';
+import { take, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-assets',
@@ -15,19 +16,27 @@ export class AssetsPage implements OnInit, OnDestroy {
   assets: Asset[] = [];
   filterAssets: Asset[] = [];
   private assetSub: Subscription;
+  balanceBTC = 0;
+  balanceUSD = 0;
 
   hideZeroBal = false;
 
   constructor(
     private modalCtrl: ModalController,
-    private assetService: AssetsService
+    private assetService: AssetsService,
+    private loadingCtrl: LoadingController,
   ) { }
 
   ngOnInit() {
-    this.assetSub = this.assetService.assets.subscribe((assets) => {
-      this.assets = assets;
-      this.filterAssets = this.assets;
-    });
+    this.assetSub = this.assetService.assets
+    .pipe(
+      map((assets) => {
+        this.assets = assets;
+        this.filterAssets = this.assets;
+      })
+    )
+    .subscribe();
+
   }
 
   ngOnDestroy() {
@@ -47,8 +56,24 @@ export class AssetsPage implements OnInit, OnDestroy {
   }
 
   async getBalance() {
+    this.balanceBTC = 0;
+    this.balanceUSD = 0;
     this.assets.forEach(async (v, k) => {
-      await this.assetService.getAssetBalance(v.symbol, v.publicKey, v.balance);
+      this.loadingCtrl.create({ message: 'Checking '  + v.symbol + ' balance ... '})
+      .then(loadingEl => {
+        loadingEl.present();
+        this.assetService.getAssetBalance(v.symbol, v.publicKey, v.balance)
+        .pipe(
+          take(1),
+          map((result) => {
+            this.balanceBTC += result.balanceBTC;
+            this.balanceUSD += result.balanceUSD;
+            loadingEl.dismiss();
+          })
+        )
+        .subscribe();
+      });
+
     });
   }
 
