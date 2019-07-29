@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Plugins } from '@capacitor/core';
-import { BehaviorSubject, from } from 'rxjs';
-import { take, map, tap } from 'rxjs/operators';
+import { BehaviorSubject, from, of } from 'rxjs';
+import { take, map, tap, switchMap } from 'rxjs/operators';
 
 import { User, SyncUser } from './user.model';
 import { EncryptService } from '../encrypt.service';
@@ -19,11 +19,12 @@ export class AuthService {
   private _user = new BehaviorSubject<User>(null);
   private _userIsAuthenticated = false;
   private _userPass = '';
+  private _corePGPKey = '';
 
 
   constructor(
     private http: HttpClient,
-    private encSerivce: EncryptService
+    private encService: EncryptService
   ) { }
 
   // reads assets from device local storage
@@ -37,6 +38,14 @@ export class AuthService {
     });
   }
 
+  // write assets to device local storage
+  private _storeUserOnDevice(user: User) {
+    // console.log('service storeUserOnDevice');
+    Plugins.Storage.set({
+      key: 'user',
+      value: JSON.stringify(user)
+    });
+  }
 
   get user() {
     // console.log('service get user');
@@ -48,7 +57,6 @@ export class AuthService {
       take(1),
       map(user => {
         if (user) {
-          console.dir('user', user);
           return user;
         } else {
           return null;
@@ -63,15 +71,6 @@ export class AuthService {
 
   get userIsAuthenticated() {
     return this._userIsAuthenticated;
-  }
-
-  // write assets to device local storage
-  private _storeUserOnDevice(user: User) {
-    // console.log('service storeUserOnDevice');
-    Plugins.Storage.set({
-      key: 'user',
-      value: JSON.stringify(user)
-    });
   }
 
   // add new user
@@ -90,13 +89,19 @@ export class AuthService {
   login(password: string) {
     // console.log('service login');
 
-    return Plugins.Storage.get({ key: 'user' }).then(data => {
+    return Plugins.Storage.get({ key: 'user' })
+    .then(data => {
       const storedData = JSON.parse(data.value);
-      const decPhrase = this.encSerivce.decryptCJS(storedData.secret, password);
+      const decPhrase = this.encService.decryptCJS(storedData.secret, password);
       if (decPhrase === environment.passPhrase) {
         this._userPass = password;
         this._userIsAuthenticated = true;
         this._loadUserFromDevice();
+
+        this.apiGetCorePGPKey().subscribe((result) => {
+          this._corePGPKey = result;
+        });
+
         return storedData;
       } else {
         this._userPass = '';
@@ -112,12 +117,23 @@ export class AuthService {
     this._user.next(null);
   }
 
+  // get core node API
+  apiGetCorePGPKey() {
+    return this.http.get(environment.apiUrl + 'getPGPKey').pipe(
+      take(1),
+      map((result: any) => {
+        return result.message.pgpKey;
+      })
+    );
+  }
+
   // get user info
   apiGetUserInfo(username: string) {
     // console.log('service apiGetUserInfo');
     return this.http
       .get(this.apiURL + username)
-      .pipe(map(resData => {
+      .pipe(
+        map(resData => {
         console.log(resData);
         return resData;
       }));
@@ -141,7 +157,57 @@ export class AuthService {
         return resData;
       })
     );
+  }
 
+  apiChangeUsername(newUsername: string) {
+
+    return this.user.pipe(
+      take(1),
+      switchMap((user: User) => {
+
+        const pgpPhrase = this.encService.decryptCJS(user.pgpPhrase, this.userPass);
+        const pgpPrivKey = this.encService.decryptCJS(user.pgpPrivKey, this.userPass);
+
+        return this.encService.encryptPGP(pgpPrivKey, pgpPhrase, this._corePGPKey, user.username)
+        .then((encName) => {
+          const userInfo = {
+            'spxId': user.spxId,
+            'username': encName,
+            'newname': newUsername,
+          };
+          return userInfo;
+        });
+
+      }),
+      take(1),
+      switchMap((res: any) => {
+        return this.http.post(this.apiURL + 'changename/', res, {
+          headers: new HttpHeaders({
+            'Content-Type':  'application/json',
+          })
+        })
+        .pipe(
+          map((resData: any) => {
+            return resData;
+          })
+        );
+      }),
+      take(1),
+      switchMap((result: any) => {
+        if (result.type === 'success' && result.message.user !== '') {
+          return this.user
+          .pipe(
+            map((user) => {
+              user.username = newUsername;
+              this.updateUser(user);
+              return 'success';
+            })
+          );
+        } else {
+          return 'failed';
+        }
+      })
+    );
   }
 
 }

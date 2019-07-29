@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { take, map } from 'rxjs/operators';
+import { take, map, switchMap } from 'rxjs/operators';
 
 import { Plugins, FilesystemDirectory, FilesystemEncoding } from '@capacitor/core';
 const { Filesystem } = Plugins;
@@ -65,14 +65,14 @@ export class ProfilePage implements OnInit, OnDestroy {
             'key': asset.publicKey
           });
         });
-  
+
         const syncUser: SyncUser = {
           username: this.user.username,
           spxId: this.user.spxId,
           pgpKey: this.user.pgpPubKey,
           assets: syncAssets
         };
-  
+
         this.authService.apiSyncUser(syncUser)
         .pipe(
           take(1),
@@ -149,6 +149,62 @@ export class ProfilePage implements OnInit, OnDestroy {
       .subscribe();
   }
 
+  async showSpxKey() {
+    const alert = await this.alertCtrl.create({
+      header: 'Private Key',
+      message: this.encService.decryptCJS(this.user.spxKey, this.authService.userPass),
+      buttons: ['OK']
+    });
+
+    await alert.present();
+  }
+
+
+  async changeUsername() {
+    const alert = await this.alertCtrl.create({
+      header: 'Change Username',
+      inputs: [
+        {
+          name: 'newName',
+          type: 'text',
+          placeholder: this.user.username
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'secondary',
+          handler: () => {
+            console.log('Confirm Cancel');
+          }
+        }, {
+          text: 'Change',
+          handler: (alertData) => {
+            this.isLoading = true;
+            this.authService.apiChangeUsername(alertData.newName)
+            .pipe(
+              take(1),
+              map((result) => {
+                this.isLoading = false;
+              })
+            )
+            .subscribe();
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+
+  }
+
+
+
+
+
+
+  
   async fileWrite(filename: string, data: string) {
     await this.readdir();
 
@@ -207,17 +263,6 @@ export class ProfilePage implements OnInit, OnDestroy {
   }, (err) => {
       console.log(err);
   });
-  }
-
-
-  async showKey() {
-    const alert = await this.alertCtrl.create({
-      header: 'Private Key',
-      message: this.encService.decryptCJS(this.user.spxKey, this.authService.userPass),
-      buttons: ['OK']
-    });
-
-    await alert.present();
   }
 
 

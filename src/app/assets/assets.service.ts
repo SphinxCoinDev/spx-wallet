@@ -216,7 +216,6 @@ export class AssetsService {
   // update asset balance
   updateAssetBalance(symbol: string, balances: any) {
     console.log('service updateAssetBalance');
-    console.log('1', balances.balance);
     return this.assets
     .pipe(
       map((assets) => {
