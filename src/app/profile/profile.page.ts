@@ -5,12 +5,13 @@ import { take, map, switchMap } from 'rxjs/operators';
 import { Plugins, FilesystemDirectory, FilesystemEncoding } from '@capacitor/core';
 const { Filesystem } = Plugins;
 
-import { ToastController, AlertController } from '@ionic/angular';
+import { ToastController, AlertController, ModalController } from '@ionic/angular';
 
 import { User, SyncAssets, SyncUser } from '../auth/user.model';
 import { AuthService } from '../auth/auth.service';
 import { AssetsService } from '../assets/assets.service';
 import { EncryptService } from '../encrypt.service';
+import { PassChangeComponent } from './pass-change/pass-change.component';
 
 
 
@@ -34,6 +35,7 @@ export class ProfilePage implements OnInit, OnDestroy {
     private encService: EncryptService,
     private toastCtrl: ToastController,
     private alertCtrl: AlertController,
+    private modalCtrl: ModalController,
   ) { }
 
   ngOnInit() {
@@ -199,12 +201,23 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   }
 
+  changePassword() {
+    this.modalCtrl
+    .create({
+      component: PassChangeComponent,
+      id: 'change-password'
+    })
+    .then(modelEl => {
+      modelEl.present();
+      return modelEl.onDidDismiss();
+    });
+
+  }
 
 
 
 
 
-  
   async fileWrite(filename: string, data: string) {
     await this.readdir();
 

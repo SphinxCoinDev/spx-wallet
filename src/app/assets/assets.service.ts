@@ -63,6 +63,37 @@ export class AssetsService {
     );
   }
 
+  // update asset balance
+  updateAsset(symbol: string, newAsset: Asset) {
+    console.log('service updateAsset');
+    return this.assets
+    .pipe(
+      map((assets) => {
+
+        const updatedAssetIndex = assets.findIndex(asset => asset.symbol === symbol);
+        const updatedAsset = [...assets];
+        const oldAsset = updatedAsset[updatedAssetIndex];
+        updatedAsset[updatedAssetIndex] = new Asset(
+          oldAsset.symbol,
+          oldAsset.name,
+          oldAsset.algo,
+          oldAsset.logoUrl,
+          oldAsset.publicKey,
+          newAsset.privateKey,
+          oldAsset.balance,
+          oldAsset.balanceBTC,
+          oldAsset.balanceUSD,
+          moment().unix()
+        );
+
+        this._assets.next(updatedAsset);
+        this._storeAssetsOnDevice();
+        return;
+      })
+    );
+  }
+
+
   // return all assets
   get assets() {
     console.log('service assets');

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Plugins } from '@capacitor/core';
-import { BehaviorSubject, from, of } from 'rxjs';
-import { take, map, tap, switchMap } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs';
+import { take, map, switchMap } from 'rxjs/operators';
 
 import { User, SyncUser } from './user.model';
 import { EncryptService } from '../encrypt.service';
@@ -91,23 +91,30 @@ export class AuthService {
 
     return Plugins.Storage.get({ key: 'user' })
     .then(data => {
-      const storedData = JSON.parse(data.value);
-      const decPhrase = this.encService.decryptCJS(storedData.secret, password);
-      if (decPhrase === environment.passPhrase) {
-        this._userPass = password;
-        this._userIsAuthenticated = true;
-        this._loadUserFromDevice();
-
-        this.apiGetCorePGPKey().subscribe((result) => {
-          this._corePGPKey = result;
-        });
-
-        return storedData;
-      } else {
+      try {
+        const storedData = JSON.parse(data.value);
+        const decPhrase = this.encService.decryptCJS(storedData.secret, password);
+        if (decPhrase === environment.passPhrase) {
+          this._userPass = password;
+          this._userIsAuthenticated = true;
+          this._loadUserFromDevice();
+  
+          this.apiGetCorePGPKey().subscribe((result) => {
+            this._corePGPKey = result;
+          });
+  
+          return storedData;
+        } else {
+          this._userPass = '';
+          this._userIsAuthenticated = false;
+          return null;
+        }
+      } catch (error) {
+        console.log(error);
         this._userPass = '';
         this._userIsAuthenticated = false;
         return null;
-      }
+    }
     });
   }
 
