@@ -1,0 +1,56 @@
+<ion-header>
+
+  <ion-toolbar color="primary">
+
+    <ion-title>Change Password</ion-title>
+
+    <ion-buttons slot="primary">
+      <ion-button (click)="onCancel()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  
+  </ion-toolbar>
+      
+</ion-header>
+    
+<ion-content padding>
+  <form [formGroup]="formChangePass">
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <ion-list>
+            <ion-item>
+              <ion-label position="floating">Current Password</ion-label>
+              <ion-input type="password" formControlName="curPass" minLenght="6" required placeholder="min. length 6"></ion-input>
+            </ion-item>
+            <ion-item lines="none" *ngIf="!correctPass">
+              <p class="err">Password is not correct !!!</p>
+            </ion-item>
+            <ion-item>
+              <ion-label position="floating">New Password</ion-label>
+              <ion-input type="password" formControlName="newPass1" minLenght="6" required placeholder="min. length 6"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label position="floating">Confirm New Password</ion-label>
+              <ion-input type="password" formControlName="newPass2" minLenght="6" required placeholder="min. length 6"></ion-input>
+            </ion-item>
+            <ion-item lines="none" *ngIf="
+            (formChangePass.get('newPass1').value !== formChangePass.get('newPass2').value) && 
+            formChangePass.get('newPass2').touched">
+              <p class="err">New Passwords don't match !!!</p>
+            </ion-item>
+          </ion-list>  
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
+          <ion-button color="primary" expand="block" (click)="changePassword()" [disabled]="!formChangePass.valid">Change</ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </form>
+
+</ion-content>
+
+  
