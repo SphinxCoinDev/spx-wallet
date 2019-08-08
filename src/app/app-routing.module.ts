@@ -45,9 +45,49 @@ const routes: Routes = [
         loadChildren: './assets/assets.module#AssetsPageModule'
       },
       {
-        path: 'asset',
+        path: 'asset-info',
         canLoad: [ AuthGuard ],
-        loadChildren: './assets/asset/asset.module#AssetPageModule'
+        children: [
+          {
+            path: '',
+            redirectTo: '/assets',
+            pathMatch: 'full'
+          },
+          {
+            path: ':symbol',
+            loadChildren: './assets/asset/asset-info/asset-info.module#AssetInfoPageModule'
+          }
+        ]
+      },
+      {
+        path: 'asset-send',
+        canLoad: [ AuthGuard ],
+        children: [
+          {
+            path: '',
+            redirectTo: '/assets',
+            pathMatch: 'full'
+          },
+          {
+            path: ':symbol',
+            loadChildren: './assets/asset/asset-send/asset-send.module#AssetSendPageModule'
+          }
+        ]
+      },
+      {
+        path: 'asset-receive',
+        canLoad: [ AuthGuard ],
+        children: [
+          {
+            path: '',
+            redirectTo: '/assets',
+            pathMatch: 'full'
+          },
+          {
+            path: ':symbol',
+            loadChildren: './assets/asset/asset-receive/asset-receive.module#AssetReceivePageModule'
+          }
+        ]
       }
     ]
   },

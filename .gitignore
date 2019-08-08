@@ -13,7 +13,6 @@ environmenet.ts
 .vscode/
 npm-debug.log*
 
-
 .idea/
 .ionic/
 .sourcemaps/

@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NavController, AlertController, ToastController, LoadingController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { Clipboard } from '@ionic-native/clipboard/ngx';
@@ -20,6 +20,7 @@ export class AssetInfoPage implements OnInit, OnDestroy {
   private assetSub: Subscription;
 
   constructor(
+    private router: Router,
     private route: ActivatedRoute,
     private navCtrl: NavController,
     private assetService: AssetsService,
@@ -93,6 +94,14 @@ export class AssetInfoPage implements OnInit, OnDestroy {
     });
 
     await alert.present();
+  }
+
+  sendFunds() {
+    this.router.navigateByUrl('/assets/asset-send/' + this.asset.symbol);
+  }
+
+  receiveFunds() {
+    this.router.navigateByUrl('/assets/asset-receive/' + this.asset.symbol);
   }
 
 }

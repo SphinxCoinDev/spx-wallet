@@ -15,36 +15,30 @@
 <ion-content padding>
 
   <ion-grid>
-
-    <ion-row>
-      <ion-col>
-        <ion-list>
-          <ion-item>
-            <ion-label position="floating">Select Asset</ion-label>
-            <ion-select (ionChange)="assetSelected($event)">
-              <ion-select-option *ngFor="let asset of assets" [value]="asset.symbol">{{ asset.name + ' [' + asset.symbol + ']' }}</ion-select-option>
-            </ion-select>
-          </ion-item>
-        </ion-list>  
-      </ion-col>
-    </ion-row>
     
-  </ion-grid>
-
-  <ion-grid *ngIf="isLoaded">
     <ion-row>
-      <ion-col>
-        <ion-item text-center lines="none">
-          <ion-label text-wrap>{{ asset.publicKey }}
-          </ion-label>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col>
-        <ion-item text-center lines="none">
-          <qrcode [qrdata]="qrCode"></qrcode>
-        </ion-item>
+      <ion-col size="12" size-sm="8" offset-sm="2" text-center>
+        <ion-card>
+          <ion-card-header>
+              <ion-item lines="none"> 
+                <ion-avatar slot="start">
+                  <ion-img src="assets/logos/{{ asset?.logoUrl }}"></ion-img>
+                </ion-avatar>
+                <ion-label>
+                  <h1>{{ asset?.name }} ({{ asset?.symbol }})</h1>
+                </ion-label>
+              </ion-item>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-item text-center lines="none">
+              <ion-label text-wrap>{{ asset?.publicKey }}
+              </ion-label>
+            </ion-item>
+            <ion-item text-center lines="none">
+              <qrcode [qrdata]="qrCode"></qrcode>
+            </ion-item>
+          </ion-card-content>
+        </ion-card>
       </ion-col>
     </ion-row>
   </ion-grid>
