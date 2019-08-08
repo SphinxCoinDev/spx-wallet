@@ -4,12 +4,12 @@ import { LoadingController, ModalController, ToastController, NavController } fr
 // https://www.freakyjolly.com/ionic-4-add-barcode-qr-code-scanner-encoder-ionic-4-native-plugin/
 import { BarcodeScannerOptions, BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
 import { Subscription } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
 import { AssetsService } from '../../assets.service';
 import { Asset } from '../../asset.model';
 import { AuthService } from '../../../auth/auth.service';
 import { EncryptService } from '../../../encrypt.service';
 import { LookupComponent } from '../../../contacts/contact/lookup/lookup.component';
-import { ActivatedRoute } from '@angular/router';
 
 
 @Component({
@@ -62,13 +62,10 @@ export class AssetSendPage implements OnInit, OnDestroy {
       .subscribe(
         (assets: Asset[]) => {
           this.asset = assets.find(asset => asset.symbol === paramMap.get('symbol'));
-          console.log(this.asset);
           this.assetSet = true;
           this.checkFees();
         }
       );
-
-      // this.getBalance();
     });
 
     this.form = new FormGroup({
@@ -84,39 +81,11 @@ export class AssetSendPage implements OnInit, OnDestroy {
       })
     });
 
-    // this.assetSub = this.assetService.assets
-    // .subscribe((assets: Asset[]) => {
-    //   const result = assets.filter(asset => asset.balance > 0);
-    //   this.assets = result;
-    // });
-
   }
 
   ngOnDestroy() {
     this.assetSub.unsubscribe();
     this.form.reset();
-  }
-
-  assetSelected($event) {
-    this.symbol = $event.detail.value;
-    this.submitted = false;
-    this.trxHash = '';
-    this.form.get('recipientAddress').setValue('');
-    this.form.get('recipientAmount').setValue('');
-
-    this.loadingCtrl.create({ message: 'Checking fees ...' }).then(loadingEl => {
-      loadingEl.present();
-      this.assetSub = this.assetService.assets.subscribe((assets: Asset[]) => {
-        this.asset = assets.find(asset => asset.symbol === this.symbol);
-        this.assetService.getAssetBalance(this.asset.symbol, this.asset.publicKey, this.asset.balance);
-        this.assetService.getAssetFees(this.asset.symbol, this.asset.publicKey).then((result: any) => {
-          this.fees = Number(result.message.fees);
-          loadingEl.dismiss();
-        });
-        this.assetSet = true;
-      });
-    });
-
   }
 
   checkFees() {
