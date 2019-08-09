@@ -29,7 +29,7 @@ export class AssetsService {
 
   // write assets to device local storage
   private _storeAssetsOnDevice() {
-    console.log('service storeAssetsOnDevice');
+    // console.log('service storeAssetsOnDevice');
     this.assets.subscribe(assets => {
       Plugins.Storage.set({
         key: 'assets',
@@ -40,7 +40,7 @@ export class AssetsService {
 
   // reads assets from device local storage
   private _loadAssetsFromDevice() {
-    console.log('service loadAssetsFromDevice');
+    // console.log('service loadAssetsFromDevice');
 
     Plugins.Storage.get({ key: 'assets' })
     .then(data => {
@@ -52,7 +52,7 @@ export class AssetsService {
 
   // add new asset
   addNewAsset(asset: Asset) {
-    console.log('service addNewAsset');
+    // console.log('service addNewAsset');
     return this.assets.pipe(
       take(1),
       tap(assets => {
@@ -65,7 +65,7 @@ export class AssetsService {
 
   // update asset balance
   updateAsset(symbol: string, newAsset: Asset) {
-    console.log('service updateAsset');
+    // console.log('service updateAsset');
     return this.assets
     .pipe(
       map((assets) => {
@@ -96,7 +96,7 @@ export class AssetsService {
 
   // return all assets
   get assets() {
-    console.log('service assets');
+    // console.log('service assets');
     if (this._assets.value.length === 0) {
       this._loadAssetsFromDevice();
     }
@@ -121,7 +121,7 @@ export class AssetsService {
 
   // return a single asset
   getAsset(symbol: string): Observable<Asset> {
-    console.log('service asset');
+    // console.log('service asset');
     return this.assets.pipe(
       take(1),
       map(assets => {

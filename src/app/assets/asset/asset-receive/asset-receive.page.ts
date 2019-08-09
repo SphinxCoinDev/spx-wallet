@@ -7,6 +7,7 @@ import { AssetsService } from '../../assets.service';
 import { Asset } from '../../asset.model';
 import { NavController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
+import { take, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-asset-receive',
@@ -35,13 +36,15 @@ export class AssetReceivePage implements OnInit, OnDestroy {
         return;
       }
 
-      this.assetSub = this.assetService.assets
-      .subscribe(
-        (assets: Asset[]) => {
-          this.asset = assets.find(asset => asset.symbol === paramMap.get('symbol'));
+      this.assetSub = this.assetService.getAsset(paramMap.get('symbol'))
+      .pipe(
+        take(1),
+        map((asset: Asset) => {
+          this.asset = asset;
           this.qrCode = this.asset.publicKey;
-        }
-      );
+        })
+      )
+      .subscribe();
     });
   }
 

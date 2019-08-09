@@ -39,14 +39,14 @@ export class AssetInfoPage implements OnInit, OnDestroy {
         return;
       }
 
-      this.assetSub = this.assetService.assets
-      .subscribe(
-        (assets: Asset[]) => {
-          this.asset = assets.find(asset => asset.symbol === paramMap.get('symbol'));
-        }
-      );
-
-      this.getBalance();
+      this.assetSub = this.assetService.getAsset(paramMap.get('symbol'))
+      .pipe(
+        take(1),
+        map((asset: Asset) => {
+          this.asset = asset;
+        })
+      )
+      .subscribe();
     });
   }
 

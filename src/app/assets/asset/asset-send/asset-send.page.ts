@@ -10,6 +10,7 @@ import { Asset } from '../../asset.model';
 import { AuthService } from '../../../auth/auth.service';
 import { EncryptService } from '../../../encrypt.service';
 import { LookupComponent } from '../../../contacts/contact/lookup/lookup.component';
+import { take, map } from 'rxjs/operators';
 
 
 @Component({
@@ -58,14 +59,15 @@ export class AssetSendPage implements OnInit, OnDestroy {
         return;
       }
 
-      this.assetSub = this.assetService.assets
-      .subscribe(
-        (assets: Asset[]) => {
-          this.asset = assets.find(asset => asset.symbol === paramMap.get('symbol'));
-          this.assetSet = true;
+      this.assetSub = this.assetService.getAsset(paramMap.get('symbol'))
+      .pipe(
+        take(1),
+        map((asset: Asset) => {
+          this.asset = asset;
           this.checkFees();
-        }
-      );
+        })
+      )
+      .subscribe();
     });
 
     this.form = new FormGroup({
